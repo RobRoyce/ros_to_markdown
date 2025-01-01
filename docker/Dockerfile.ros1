@@ -1,0 +1,65 @@
+FROM ros:noetic
+
+# Avoid prompts from apt
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies in stages to identify any issues
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    python3-pytest \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install ROS-specific packages
+RUN apt-get update && apt-get install -y \
+    ros-noetic-turtlesim \
+    python3-catkin-tools \
+    ros-noetic-joy \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install additional tools
+RUN apt-get update && apt-get install -y \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set up the main workspace
+WORKDIR /workspace
+
+# Copy package files
+COPY pyproject.toml README.md ./
+
+# Upgrade pip and install build dependencies
+RUN pip3 install --upgrade pip setuptools wheel
+RUN pip3 install hatchling
+
+# Create source directory
+RUN mkdir -p src/ros_to_markdown
+
+# Copy source code and tests
+COPY src/ros_to_markdown src/ros_to_markdown/
+COPY tests tests/
+
+# Install test dependencies first
+RUN pip3 install --no-cache-dir \
+    pytest \
+    pytest-cov \
+    pytest-mock \
+    pytest-asyncio \
+    coverage \
+    exceptiongroup
+
+# Create pytest configuration
+RUN echo '[pytest]\nasyncio_mode = auto\nasyncio_default_fixture_loop_scope = function\ntestpaths = tests\npython_files = test_*.py\n' > pytest.ini
+
+# Install package in editable mode with ROS1
+RUN /bin/bash -c "source /opt/ros/noetic/setup.bash \
+    && pip3 install -e .[test]"
+
+# Copy launch script
+COPY docker/scripts/launch-ros1-test-env.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/launch-ros1-test-env.sh
+
+# Add any additional setup or environment variables
+ENV PYTHONPATH=/workspace/src:$PYTHONPATH
+
+# Default command
+CMD ["/bin/bash"]

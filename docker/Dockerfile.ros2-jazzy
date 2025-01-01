@@ -1,0 +1,71 @@
+FROM ros:jazzy
+
+# Avoid prompts from apt
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    python3-pytest \
+    python3-venv \
+    python3-setuptools \
+    python3-wheel \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install ROS-specific packages
+RUN apt-get update && apt-get install -y \
+    ros-jazzy-turtlesim \
+    python3-colcon-common-extensions \
+    ros-jazzy-joy \
+    python3-rclpy \
+    python3-yaml \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install additional tools
+RUN apt-get update && apt-get install -y \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set up the main workspace
+WORKDIR /workspace
+
+# Create and activate a virtual environment
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+ENV VIRTUAL_ENV="/opt/venv"
+
+# Copy package files
+COPY pyproject.toml README.md ./
+
+# Install pip packages in virtual environment
+RUN /opt/venv/bin/pip3 install --no-cache-dir \
+    --upgrade pip setuptools wheel && \
+    /opt/venv/bin/pip3 install --no-cache-dir \
+    hatchling \
+    'black>=23.0' \
+    'pytest>=7.0' \
+    'pytest-cov>=4.0' \
+    'ruff>=0.0.290' \
+    'pytest-mock>=3.10.0' \
+    'pytest-asyncio>=0.21.0'
+
+# Create source directory and copy code
+RUN mkdir -p src/ros_to_markdown
+COPY src/ros_to_markdown src/ros_to_markdown/
+COPY tests tests/
+
+# Build the package using colcon
+RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
+    colcon build --symlink-install"
+
+# Source the workspace in every new shell
+RUN echo "source /opt/ros/jazzy/setup.bash" >> /root/.bashrc && \
+    echo "source /workspace/install/setup.bash" >> /root/.bashrc
+
+# Copy and setup launch script
+COPY docker/scripts/launch-ros2-test-env.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/launch-ros2-test-env.sh
+
+ENV PYTHONPATH=/workspace/src:$PYTHONPATH
+
+CMD ["/bin/bash"] 

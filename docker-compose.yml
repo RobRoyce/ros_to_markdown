@@ -1,0 +1,83 @@
+services:
+  ros1:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ros1
+    volumes:
+      - .:/workspace
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    environment:
+      - ROS_DISTRO=noetic
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - XAUTHORITY=/tmp/.Xauthority
+    network_mode: host
+    privileged: true
+    labels:
+      - "com.ros_to_markdown.service=true"
+
+  ros1-dev:
+    extends: ros1
+    command: launch-ros1-test-env.sh
+
+  # ROS2 Humble services
+  ros2-humble:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ros2-humble
+    volumes:
+      - .:/workspace
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    environment:
+      - ROS_DISTRO=humble
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - XAUTHORITY=/tmp/.Xauthority
+      - DEBIAN_FRONTEND=noninteractive
+      - INCLUDE_JOYSTICK=0
+    network_mode: host
+    privileged: true
+    labels:
+      - "com.ros_to_markdown.service=true"
+
+  ros2-humble-dev:
+    extends: ros2-humble
+    command: launch-ros2-test-env.sh
+
+  # ROS2 Iron services
+  ros2-iron:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ros2-iron
+    volumes:
+      - .:/workspace
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    environment:
+      - ROS_DISTRO=iron
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - XAUTHORITY=/tmp/.Xauthority
+      - DEBIAN_FRONTEND=noninteractive
+      - INCLUDE_JOYSTICK=0
+    network_mode: host
+    privileged: true
+    labels:
+      - "com.ros_to_markdown.service=true"
+
+  ros2-iron-dev:
+    extends: ros2-iron
+    command: launch-ros2-test-env.sh
+
+  # Test environments
+  test-ros1:
+    extends: ros1
+    command: pytest tests/
+
+  test-ros2-humble:
+    extends: ros2-humble
+    command: pytest tests/
+
+  test-ros2-iron:
+    extends: ros2-iron
+    command: pytest tests/
+

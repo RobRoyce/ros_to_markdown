@@ -1,0 +1,143 @@
+Project start date: Jan 1, 2025
+Project lead: Rob Royce ([github.com/robroyce](https://github.com/RobRoyce))
+
+# On Python Development
+You are an AI assistant specialized in Python. Emphasize:
+- Clear, modular structure (src, tests, docs, config).
+- Separate files for models, services, controllers, utils.
+- Environment variable–based config management.
+- Robust error handling/logging with context.
+- Comprehensive pytest tests.
+- Docstrings (PEP 257) + type annotations.
+- Dependency mgmt via uv + virtual envs.
+- Code style via Ruff.
+- CI/CD via GitHub/GitLab.
+- Code snippets optimized for clarity.
+
+# ROS Development
+- **ROS1 (Noetic Ninjemys)**: EOL May 2025; uses Python 3.8 on Ubuntu 20.04.
+- **ROS2** (focus on a single distro at a time):
+  - **Iron Irwini**: EOL Dec 2027; Ubuntu 22.04 + Python 3.10.
+  - **Humble Hawksbill**: EOL May 2027; Ubuntu 22.04 + Python 3.10.
+  - **Jazzy Jalisco**: EOL May 2029; Ubuntu 24.04 + Python 3.10.
+- Auto-detection of ROS1 vs. ROS2.  
+- For ROS1: `rospy/rlcpy + catkin_tools`; for ROS2: `rclpy + colcon + ament_index`.
+- Never mix ROS1 and ROS2 code unless explicitly asked.
+- Always specify the exact ROS/ROS2 distro + correct Ubuntu/Python versions when generating code.
+
+# ROS2 Code Generation & Best Practices
+- Adhere to standard ROS2 package structure (`package.xml`, `CMakeLists.txt`).
+- Provide code style/conventions for each ROS2 distro if needed.
+- If using Docker, specify official ROS images and relevant Docker settings (network, locale, `rosdep` usage).
+- Include comprehensive tests + debugging (use `ros2doctor` when applicable).
+- Use clear docstrings/comments explaining architecture.
+- For multi-ROS setups, maintain separate workspaces.
+
+# Project Overview: `ros_to_markdown`
+Generates Markdown from a ROS system (workspace, running system, or bag). Collects info on nodes, topics, services, actions, parameters, messages, and launch files. Exports to Markdown for use with LLMs.
+
+**Global Rules**  
+- Add type annotations + docstrings (PEP 257) to all functions/classes.
+- Include return types where relevant.
+- Keep existing comments.
+- Create necessary files/folders.
+- Tests must have docstrings + use pytest.
+- Only generate code for one ROS version at a time.
+
+# Rules
+
+- name: "Project Structure"
+  description: "Core file/directory layout"
+  paths:
+    - "src/ros_to_markdown/**/*.py"
+    - "tests/**/*.py"
+    - "docs/**/*.md"
+    - "docker/**/*"
+    - "pyproject.toml"
+    - "docker-compose.yml"
+    - ".gitignore"
+    - "README.md"
+
+- name: "Docker Configuration"
+  description: "Dockerfiles using official ROS images"
+  paths:
+    - "docker/Dockerfile.*"
+    - "docker/scripts/run-in-docker.sh"
+    - "docker-compose.yml"
+  rules:
+    - "Use official ROS images"
+    - "Minimize extra dependencies"
+    - "Separate configs for ROS1 vs. ROS2"
+    - "For Noetic Docker, watch for locale + `rosdep` setup"
+    - "For ROS2 Docker, follow official guidelines (colcon, etc.)"
+    - "Jazzy support disabled until official release"
+    - "You must support both `docker compose` and `docker-compose` commands"
+
+- name: "Python Source"
+  description: "Python code style + structure"
+  paths:
+    - "src/ros_to_markdown/**/*.py"
+  rules:
+    - "Type annotations + PEP 257 docstrings"
+    - "Use Ruff for formatting"
+
+- name: "Tests"
+  description: "Test files"
+  paths:
+    - "tests/**/*.py"
+  rules:
+    - "Use pytest"
+    - "Docstring all tests"
+
+- name: "Documentation"
+  description: "Markdown docs"
+  paths:
+    - "docs/**/*.md"
+    - "README.md"
+
+- name: "Build Configuration"
+  description: "Build + dependency configs"
+  paths:
+    - "pyproject.toml"
+    - ".ruff.toml"
+
+- name: "ROS Versioning"
+  description: "Selection + usage of ROS1/ROS2"
+  rules:
+    - "Ask user if unclear which version/distro"
+    - "No mixing (ROS1 vs. ROS2) unless asked"
+    - "Match correct Ubuntu/Python version"
+
+- name: "Markdown Output Formatting"
+  description: "Markdown for code + commands"
+  rules:
+    - "Wrap Python code in ```python ... ```"
+    - "Wrap shell commands in ```bash ... ```"
+    - "Output extracted ROS data in detailed Markdown"
+
+- name: "Data Extraction to Markdown"
+  description: "Demonstrate data extraction logic"
+  rules:
+    - "Code blocks for data extraction"
+    - "Descriptive var names + docstrings"
+
+- name: "Python Packaging"
+  description: "Packaging best practices"
+  rules:
+    - "ROS1 => package.xml (catkin); ROS2 => package.xml + setup.py (colcon)"
+    - "Maintain or update a README"
+
+- name: "General Code Style"
+  description: "PEP 257 docstrings + clarity"
+  rules:
+    - "Use meaningful names"
+    - "Document all modules/classes/functions"
+    - "Minimize deep nesting"
+    - "Preserve existing comments"
+
+# Cursor Chat Commands
+- name: "Commands"
+  description: "Typed commands for Cursor"
+  rules:
+    - "\"update docs\" => Use current conversation to update all Markdown files in the repository."
+    - "\"update cursorrules\" => Use current conversation to update the `.cursorrules` file itself."
