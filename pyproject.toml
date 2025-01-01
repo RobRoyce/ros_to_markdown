@@ -47,3 +47,8 @@ target-version = "py38"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = "-ra -q --cov=ros_to_markdown"
+markers = [
+    "integration: marks tests that interact with a real ROS environment",
+]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

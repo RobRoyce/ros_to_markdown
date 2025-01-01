@@ -136,3 +136,59 @@ If you encounter issues:
 - [Docker Documentation](https://docs.docker.com/)
 - [ROS Docker Official Images](https://hub.docker.com/_/ros)
 - [ROS2 Docker Official Images](https://hub.docker.com/_/ros)
+
+## Testing Infrastructure
+
+### Quick Test Commands
+
+```bash
+# Run all tests across all distributions
+./scripts/run-tests.sh
+
+# Run specific test file
+./scripts/run-tests.sh tests/core/test_ros_detector.py
+
+# Run tests with verbose output
+./scripts/run-tests.sh -v
+```
+
+### Test Runner Options
+
+The `run-tests.sh` script provides flexible options for running tests:
+
+```bash
+Usage: ./scripts/run-tests.sh [OPTIONS] [TEST_PATH]
+
+Options:
+  -h, --help     Show this help message
+  -v, --verbose  Show verbose output
+  -r, --ros1     Test only ROS1
+  -2, --ros2     Test only ROS2
+  -d, --distro   Test specific distribution (noetic|humble|iron)
+
+Examples:
+  ./scripts/run-tests.sh                                    # Run all tests
+  ./scripts/run-tests.sh tests/core/test_ros_detector.py   # Run specific test file
+  ./scripts/run-tests.sh -d humble                         # Test only on ROS2 Humble
+  ./scripts/run-tests.sh -r                                # Test only on ROS1
+```
+
+### Test Environments
+
+Tests are run in isolated Docker containers for each ROS distribution:
+- ROS1 Noetic: `test-ros1`
+- ROS2 Humble: `test-ros2-humble`
+- ROS2 Iron: `test-ros2-iron`
+
+The test runner automatically manages container lifecycle and ensures clean test environments for each run.
+
+### Integration Tests
+
+For ROS-specific integration tests, use the `@pytest.mark.integration` decorator:
+
+```python
+@pytest.mark.integration
+def test_my_ros_feature():
+    # This test will run in actual ROS environment
+    pass
+```
