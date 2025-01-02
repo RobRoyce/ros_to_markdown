@@ -1,15 +1,12 @@
 import os
 import subprocess
-from typing import Optional
+from importlib import import_module
+from typing import Optional, Tuple
 from ..models.ros_components import ROSVersion
 
 
 class ROSDetector:
-    """Utility class to detect ROS version in the current environment.
-    
-    This class provides methods to automatically determine whether ROS1 or ROS2
-    is installed and active in the current environment.
-    """
+    """Utility class to detect ROS version in the current environment."""
 
     @staticmethod
     def detect_ros_version() -> ROSVersion:
@@ -24,7 +21,7 @@ class ROSDetector:
         # Check ROS2 first
         if os.environ.get("ROS_DISTRO") in ["foxy", "galactic", "humble", "iron", "rolling"]:
             try:
-                import rclpy
+                import_module('rclpy')
                 return ROSVersion.ROS2
             except ImportError:
                 pass
@@ -32,7 +29,7 @@ class ROSDetector:
         # Check ROS1
         if os.environ.get("ROS_DISTRO") in ["noetic", "melodic"]:
             try:
-                import rospy
+                import_module('rospy')
                 return ROSVersion.ROS1
             except ImportError:
                 pass

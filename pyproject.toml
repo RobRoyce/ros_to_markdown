@@ -5,7 +5,7 @@ description = "Convert ROS systems to Markdown for LLM processing"
 authors = [
     { name = "Rob Royce", email = "rob.royce@jpl.nasa.gov" }
 ]
-requires-python = ">=3.8,<3.12"
+requires-python = ">=3.8,<3.13"
 dependencies = [
     "pyyaml>=5.3.1",
 ]
@@ -47,3 +47,8 @@ target-version = "py38"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = "-ra -q --cov=ros_to_markdown"
+markers = [
+    "integration: marks tests that interact with a real ROS environment",
+]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

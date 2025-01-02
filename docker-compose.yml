@@ -4,17 +4,19 @@ services:
       context: .
       dockerfile: docker/Dockerfile.ros1
     volumes:
-      - .:/workspace
-      - /tmp/.X11-unix:/tmp/.X11-unix
+      - .:/workspace:rw
     environment:
       - ROS_DISTRO=noetic
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
-      - XAUTHORITY=/tmp/.Xauthority
+      - NO_AT_BRIDGE=1
     network_mode: host
     privileged: true
+    extra_hosts:
+      - ${DOCKER_EXTRA_HOSTS:-host.docker.internal:host-gateway}
     labels:
       - "com.ros_to_markdown.service=true"
+    working_dir: /workspace
 
   ros1-dev:
     extends: ros1
@@ -26,7 +28,7 @@ services:
       context: .
       dockerfile: docker/Dockerfile.ros2-humble
     volumes:
-      - .:/workspace
+      - .:/workspace:rw
       - /tmp/.X11-unix:/tmp/.X11-unix
     environment:
       - ROS_DISTRO=humble
@@ -39,6 +41,7 @@ services:
     privileged: true
     labels:
       - "com.ros_to_markdown.service=true"
+    working_dir: /workspace
 
   ros2-humble-dev:
     extends: ros2-humble
@@ -50,7 +53,7 @@ services:
       context: .
       dockerfile: docker/Dockerfile.ros2-iron
     volumes:
-      - .:/workspace
+      - .:/workspace:rw
       - /tmp/.X11-unix:/tmp/.X11-unix
     environment:
       - ROS_DISTRO=iron
@@ -63,9 +66,35 @@ services:
     privileged: true
     labels:
       - "com.ros_to_markdown.service=true"
+    working_dir: /workspace
 
   ros2-iron-dev:
     extends: ros2-iron
+    command: launch-ros2-test-env.sh
+
+  # ROS2 Jazzy services
+  ros2-jazzy:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ros2-jazzy
+    volumes:
+      - .:/workspace:rw
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    environment:
+      - ROS_DISTRO=rolling
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - XAUTHORITY=/tmp/.Xauthority
+      - DEBIAN_FRONTEND=noninteractive
+      - INCLUDE_JOYSTICK=0
+    network_mode: host
+    privileged: true
+    labels:
+      - "com.ros_to_markdown.service=true"
+    working_dir: /workspace
+
+  ros2-jazzy-dev:
+    extends: ros2-jazzy
     command: launch-ros2-test-env.sh
 
   # Test environments
@@ -79,5 +108,8 @@ services:
 
   test-ros2-iron:
     extends: ros2-iron
+    command: pytest tests/
+  test-ros2-jazzy:
+    extends: ros2-jazzy
     command: pytest tests/
 

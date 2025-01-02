@@ -1,15 +1,14 @@
 #!/bin/bash
 
-# Run tests for ROS1
-echo "Testing ROS1 (Noetic)..."
-docker compose run --rm test-ros1
+# Make script exit on first error
+set -e
 
-# Run tests for stable ROS2 distros
-for distro in humble iron; do
-    echo "Testing ROS2 ($distro)..."
-    docker compose run --rm test-ros2-$distro
-done
+echo "Running ROS Detection Tests across all supported distributions..."
 
-# Note: Jazzy testing temporarily disabled
-# echo "Testing ROS2 (Jazzy)..."
-# docker compose run --rm test-ros2-jazzy 
+# Use the Python test runner to execute tests
+python3 -m tests.test_helpers.docker_test_runner tests/core/test_ros_detector.py
+
+# If specific test file/class/method is provided as argument, run that instead
+if [ $# -eq 1 ]; then
+    python3 -m tests.test_helpers.docker_test_runner "$1"
+fi 

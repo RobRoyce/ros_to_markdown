@@ -1,71 +1,103 @@
-FROM ros:jazzy
+FROM osrf/ros:rolling-desktop-full
 
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install system dependencies
+# Install Python 3.11 and development tools
 RUN apt-get update && apt-get install -y \
+    software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get update && apt-get install -y \
+    python3.11 \
+    python3.11-venv \
+    python3.11-dev \
     python3-pip \
     python3-pytest \
-    python3-venv \
+    python3-pytest-cov \
     python3-setuptools \
     python3-wheel \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install ROS-specific packages
-RUN apt-get update && apt-get install -y \
-    ros-jazzy-turtlesim \
+    python3-empy \
+    python3-lark \
     python3-colcon-common-extensions \
-    ros-jazzy-joy \
-    python3-rclpy \
+    python3-pytest-repeat \
+    python3-pytest-rerunfailures \
+    python3-pytest-timeout \
+    python3-coverage \
     python3-yaml \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install additional tools
-RUN apt-get update && apt-get install -y \
+    ros-rolling-turtlesim \
+    ros-rolling-joy \
     git \
+    sudo \
     && rm -rf /var/lib/apt/lists/*
 
-# Set up the main workspace
+# Create a non-root user
+ARG USERNAME=ros
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+
+# Create the user
+RUN if getent group $USER_GID > /dev/null 2>&1; then \
+        groupmod -n $USERNAME $(getent group $USER_GID | cut -d: -f1); \
+    else \
+        groupadd --gid $USER_GID $USERNAME; \
+    fi \
+    && if getent passwd $USER_UID > /dev/null 2>&1; then \
+        usermod -l $USERNAME -g $USER_GID -d /home/$USERNAME -m $(getent passwd $USER_UID | cut -d: -f1); \
+    else \
+        useradd --uid $USER_UID --gid $USER_GID -m $USERNAME; \
+    fi \
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME
+
+# Set up rosdep under the new user
+RUN rosdep fix-permissions && \
+    su - $USERNAME -c "rosdep update"
+
+# Create and set up workspaces
+RUN mkdir -p /opt/ros/ws/src && \
+    chown -R $USERNAME:$USERNAME /opt/ros/ws && \
+    mkdir -p /home/$USERNAME/ws/src && \
+    chown -R $USERNAME:$USERNAME /home/$USERNAME/ws
+
+# Set up the workspace
 WORKDIR /workspace
-
-# Create and activate a virtual environment
-RUN python3 -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-ENV VIRTUAL_ENV="/opt/venv"
-
-# Copy package files
-COPY pyproject.toml README.md ./
-
-# Install pip packages in virtual environment
-RUN /opt/venv/bin/pip3 install --no-cache-dir \
-    --upgrade pip setuptools wheel && \
-    /opt/venv/bin/pip3 install --no-cache-dir \
-    hatchling \
-    'black>=23.0' \
-    'pytest>=7.0' \
-    'pytest-cov>=4.0' \
-    'ruff>=0.0.290' \
-    'pytest-mock>=3.10.0' \
-    'pytest-asyncio>=0.21.0'
-
-# Create source directory and copy code
 RUN mkdir -p src/ros_to_markdown
-COPY src/ros_to_markdown src/ros_to_markdown/
-COPY tests tests/
 
-# Build the package using colcon
-RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
-    colcon build --symlink-install"
+# Copy package files into the workspace
+COPY --chown=$USERNAME:$USERNAME pyproject.toml README.md ./
+COPY --chown=$USERNAME:$USERNAME src/ros_to_markdown src/ros_to_markdown/
+COPY --chown=$USERNAME:$USERNAME tests tests/
 
-# Source the workspace in every new shell
-RUN echo "source /opt/ros/jazzy/setup.bash" >> /root/.bashrc && \
-    echo "source /workspace/install/setup.bash" >> /root/.bashrc
+# Switch to non-root user
+USER $USERNAME
+
+# Create and activate Python 3.11 virtual environment
+RUN python3.11 -m venv /home/$USERNAME/.venv
+
+# Install the package in development mode
+RUN /bin/bash -c "source /opt/ros/rolling/setup.bash && \
+    source /home/$USERNAME/.venv/bin/activate && \
+    pip install --upgrade pip && \
+    pip install lark && \
+    pip install -e '.[ros2,dev]' && \
+    # Create symlinks for ROS Python packages
+    ln -s /opt/ros/rolling/lib/python3.12/site-packages/* /home/$USERNAME/.venv/lib/python3.11/site-packages/ || true"
+
+# Source the workspace in .bashrc
+RUN echo "source /opt/ros/rolling/setup.bash" >> /home/$USERNAME/.bashrc && \
+    echo "source /home/$USERNAME/.venv/bin/activate" >> /home/$USERNAME/.bashrc
 
 # Copy and setup launch script
+USER root
 COPY docker/scripts/launch-ros2-test-env.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/launch-ros2-test-env.sh
 
-ENV PYTHONPATH=/workspace/src:$PYTHONPATH
+# Set environment variables
+ENV PYTHONPATH=/workspace/src:/opt/ros/rolling/lib/python3.12/site-packages:$PYTHONPATH
+ENV VIRTUAL_ENV=/home/$USERNAME/.venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# Switch back to non-root user
+USER $USERNAME
 
 CMD ["/bin/bash"] 

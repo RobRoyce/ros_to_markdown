@@ -1,20 +1,37 @@
-FROM ros:noetic
+FROM osrf/ros:noetic-desktop-full
 
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
+
+# Set up X11 environment variables (will be overridden by docker-compose)
+ENV DISPLAY=:0
+ENV QT_X11_NO_MITSHM=1
+ENV NO_AT_BRIDGE=1
 
 # Install system dependencies in stages to identify any issues
 RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-pytest \
+    x11-apps \
+    mesa-utils \
     && rm -rf /var/lib/apt/lists/*
 
 # Install ROS-specific packages
 RUN apt-get update && apt-get install -y \
     ros-noetic-turtlesim \
     python3-catkin-tools \
-    ros-noetic-joy \
+    ros-noetic-geometry-msgs \
+    python3-rosdep \
     && rm -rf /var/lib/apt/lists/*
+
+# Fix Python package versions
+RUN pip3 install --no-cache-dir \
+    'setuptools<66.0.0' \
+    'importlib-metadata<5.0.0'
+
+# Initialize rosdep
+RUN rosdep init || true
+RUN rosdep update
 
 # Install additional tools
 RUN apt-get update && apt-get install -y \
