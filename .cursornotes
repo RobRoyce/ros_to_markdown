@@ -61,16 +61,32 @@ Why:
 - Platform-agnostic X11 setup simplifies cross-platform development and testing
 
 # Rolling/Jazzy Docker Support (2025-01-01)
-- Temporarily using Python 3.11 via deadsnakes PPA despite system Python 3.12
-- Created virtual environment solution for externally-managed Python packages
-- Developed robust user creation handling for pre-existing UID/GID conflicts
-- Verified turtlesim demos across all ROS versions
+- Using Python 3.11 from deadsnakes PPA with symlinked ROS2 packages
+- Created hybrid environment that bridges Python 3.11 venv with ROS2's Python 3.12
+- Implemented symlink solution to access ROS2 packages from Python 3.11 venv
+- Added explicit PYTHONPATH handling for cross-version compatibility
 
 Why:
-- Ubuntu 24.04's system Python 3.12 has strict package management (PEP 668)
-- Rolling base image has pre-existing user that needs careful handling
-- Virtual environment provides clean isolation for development dependencies
-- KNOWN ISSUE: This creates a version mismatch between ROS (3.12) and our tests (3.11)
+- Ubuntu 24.04's system Python 3.12 enforces strict PEP 668 package management
+- ROS2 Rolling/Jazzy requires Python 3.12 for core functionality
+- Development tools and tests need pip-installable packages (blocked by PEP 668)
+- Solution: Use Python 3.11 venv with symlinks to ROS2's Python 3.12 packages
+
+Technical Details:
+- Python 3.11 venv hosts our package and development dependencies
+- Symlinks from ROS2's Python 3.12 site-packages to venv's site-packages
+- Modified PYTHONPATH includes both Python versions' package directories
+- Verified compatibility with ROS2 core functionality and test suite
+
+Known Limitations:
+- Potential ABI compatibility issues between Python versions
+- May need updates when ROS2 packages change
+- Not suitable for production (development/testing only)
+
+Future Plans:
+- Monitor ROS2 Rolling/Jazzy for Python package management solutions
+- Investigate containerized test isolation approaches
+- Plan migration to full Python 3.12 when package management improves
 
 # Python Version Mismatch in Rolling/Jazzy (2025-01-01)
 - Currently running tests in Python 3.11 while ROS uses 3.12
@@ -87,32 +103,19 @@ TODO:
 - Investigate proper isolation techniques for system Python
 - Consider container-based test isolation approach
 
-# Project Status Notes
-- ROS1 Noetic: ✓ Working with turtlesim demos
-- ROS2 Humble: ✓ Working with turtlesim demos
-- ROS2 Iron: ✓ Working with turtlesim demos
-- ROS2 Rolling/Jazzy: ✓ Working with turtlesim demos
-
 # Docker Configuration and Testing Improvements (2025-01-01)
-- Consolidated Docker configuration into docker-compose.yml for better maintainability
-- Implemented robust test coverage tracking across all ROS environments
-- Standardized volume mounting and working directory setup
-- Simplified command handling in run-in-docker.sh
+- Consolidated Docker configuration into docker-compose.yml for better maintainability and consistent behavior
+- Standardized volume mounting, working directory setup, and test execution across all ROS environments
+- Simplified command handling in run-in-docker.sh and added persistent test coverage tracking
+- Improved cross-platform compatibility by moving complex configuration to Docker Compose
 
 Why:
-- Need consistent behavior across all ROS distributions
-- Coverage data needs to persist across container runs
+- Needed unified approach across ROS distributions with persistent coverage data
 - Complex shell escaping was causing cross-platform issues
+- Required standardized workspace and permission handling
 
-Key Changes:
-- Moved volume configuration to docker-compose.yml with explicit :rw flags
-- Centralized working directory configuration in compose file
-- Simplified run-in-docker.sh to focus on environment setup
-- Added coverage configuration with proper file permissions
-- Standardized test execution across all environments
-
-Lessons Learned:
-- Let Docker Compose handle path mounting and workspace setup
-- Keep shell scripts focused on environment setup and command delegation
-- Use explicit configuration over complex command-line arguments
-- Ensure proper permissions for coverage and test data persistence
+Technical Details:
+- Moved to explicit volume configuration in docker-compose.yml with :rw flags
+- Centralized workspace configuration and environment setup
+- Implemented proper file permissions for coverage data persistence
+- Simplified shell scripts to focus on environment setup and command delegation

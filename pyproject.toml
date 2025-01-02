@@ -5,7 +5,7 @@ description = "Convert ROS systems to Markdown for LLM processing"
 authors = [
     { name = "Rob Royce", email = "rob.royce@jpl.nasa.gov" }
 ]
-requires-python = ">=3.8,<3.12"
+requires-python = ">=3.8,<3.13"
 dependencies = [
     "pyyaml>=5.3.1",
 ]

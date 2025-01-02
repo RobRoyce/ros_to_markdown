@@ -3,27 +3,32 @@ FROM osrf/ros:rolling-desktop-full
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install system dependencies and ROS packages all at once to reduce layers
+# Install Python 3.11 and development tools
 RUN apt-get update && apt-get install -y \
+    software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get update && apt-get install -y \
+    python3.11 \
+    python3.11-venv \
+    python3.11-dev \
     python3-pip \
     python3-pytest \
+    python3-pytest-cov \
     python3-setuptools \
     python3-wheel \
     python3-empy \
     python3-lark \
     python3-colcon-common-extensions \
+    python3-pytest-repeat \
+    python3-pytest-rerunfailures \
+    python3-pytest-timeout \
+    python3-coverage \
+    python3-yaml \
     ros-rolling-turtlesim \
     ros-rolling-joy \
     git \
     sudo \
-    software-properties-common \
     && rm -rf /var/lib/apt/lists/*
-
-# Add deadsnakes PPA for Python versions
-RUN add-apt-repository ppa:deadsnakes/ppa && \
-    apt-get update && \
-    apt-get install -y python3.11 python3.11-venv python3.11-dev && \
-    rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user
 ARG USERNAME=ros
@@ -54,47 +59,45 @@ RUN mkdir -p /opt/ros/ws/src && \
     mkdir -p /home/$USERNAME/ws/src && \
     chown -R $USERNAME:$USERNAME /home/$USERNAME/ws
 
-# Copy package files
-COPY --chown=$USERNAME:$USERNAME pyproject.toml README.md ./
-
-# Create source directory and copy code
+# Set up the workspace
+WORKDIR /workspace
 RUN mkdir -p src/ros_to_markdown
+
+# Copy package files into the workspace
+COPY --chown=$USERNAME:$USERNAME pyproject.toml README.md ./
 COPY --chown=$USERNAME:$USERNAME src/ros_to_markdown src/ros_to_markdown/
 COPY --chown=$USERNAME:$USERNAME tests tests/
 
 # Switch to non-root user
 USER $USERNAME
 
-# Create virtual environment with Python 3.11
+# Create and activate Python 3.11 virtual environment
 RUN python3.11 -m venv /home/$USERNAME/.venv
 
-# Install the package in the virtual environment
+# Install the package in development mode
 RUN /bin/bash -c "source /opt/ros/rolling/setup.bash && \
     source /home/$USERNAME/.venv/bin/activate && \
-    pip install --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir -e '.[ros2,dev]' && \
-    pip install --no-cache-dir \
-    pytest \
-    pytest-cov \
-    pytest-repeat \
-    pytest-rerunfailures \
-    pytest-timeout \
-    lark \
-    coverage"
+    pip install --upgrade pip && \
+    pip install lark && \
+    pip install -e '.[ros2,dev]' && \
+    # Create symlinks for ROS Python packages
+    ln -s /opt/ros/rolling/lib/python3.12/site-packages/* /home/$USERNAME/.venv/lib/python3.11/site-packages/ || true"
+
+# Source the workspace in .bashrc
+RUN echo "source /opt/ros/rolling/setup.bash" >> /home/$USERNAME/.bashrc && \
+    echo "source /home/$USERNAME/.venv/bin/activate" >> /home/$USERNAME/.bashrc
 
 # Copy and setup launch script
 USER root
 COPY docker/scripts/launch-ros2-test-env.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/launch-ros2-test-env.sh
 
-ENV PYTHONPATH=/workspace/src:$PYTHONPATH
+# Set environment variables
+ENV PYTHONPATH=/workspace/src:/opt/ros/rolling/lib/python3.12/site-packages:$PYTHONPATH
 ENV VIRTUAL_ENV=/home/$USERNAME/.venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Switch back to non-root user
 USER $USERNAME
-
-# Ensure virtual environment is activated in the shell
-RUN echo "source /home/$USERNAME/.venv/bin/activate" >> /home/$USERNAME/.bashrc
 
 CMD ["/bin/bash"] 
