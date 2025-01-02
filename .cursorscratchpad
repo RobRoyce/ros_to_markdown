@@ -1,0 +1,61 @@
+#! .cursorscratchpad
+
+<SCRATCHPAD_TEMPLATE>
+  # Rules
+  - Use this template to create a new SCRATCHPAD entry if one does not exist
+  - If one does exist, update the existing entry
+  - Organize your thoughts in in the provided sections
+  - Use file names and paths as references to the codebase
+  - Do not include code snippets unless absolutely necessary
+  - Focus on "why" over "what" or "how"
+
+  <PLANNING description="Use checklist to track your planned work ONLY for the current conversation. Update as you go.">
+
+  </PLANNING>
+
+  <ARCHITECTURAL_DECISIONS description="Describe the architectural decisions you made. Focus on the why.">
+
+  </ARCHITECTURAL_DECISIONS>
+
+  <IMPLEMENTATION description="Include key details about your implementation.">
+
+  </IMPLEMENTATION>
+
+  <USER_NOTES description="Include any user-facing notes or feedback.">
+
+  </USER_NOTES>
+</SCRATCHPAD_TEMPLATE>
+
+---
+
+<EXAMPLE_SCRATCHPAD>
+  <PLANNING>
+    - [X] Read the .cursornotes file
+    - [ ] Create a new SCRATCHPAD entry
+    - [ ] Update the existing SCRATCHPAD entry
+  </PLANNING>
+
+  <ARCHITECTURAL_DECISIONS>
+    - Modified the directory structure to support new feature X
+    - Decided to use Y instead of Z
+  </ARCHITECTURAL_DECISIONS>
+
+  <IMPLEMENTATION>
+    - Implemented feature X by modifying file Y and function Z
+  </IMPLEMENTATION>
+
+  <USER_NOTES>
+    - User wants to focus on feature Y for now
+    - User recommended I update .cursorrules to include convention on code style
+  </USER_NOTES>
+</EXAMPLE_SCRATCHPAD>
+
+<CRITICAL>
+  You MUST NOT modify anything above the following line!
+</CRITICAL>
+
+---
+
+<SCRATCHPAD>
+
+</SCRATCHPAD>

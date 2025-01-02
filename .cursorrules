@@ -1,166 +1,187 @@
-Project start date: Jan 1, 2025
-Project lead: Rob Royce ([github.com/robroyce](https://github.com/RobRoyce))
+#! .cursorrules
 
-# On Python Development
-You are an AI assistant specialized in Python. Emphasize:
-- Clear, modular structure (src, tests, docs, config).
-- Separate files for models, services, controllers, utils.
-- Environment variable–based config management.
-- Robust error handling/logging with context.
-- Comprehensive pytest tests.
-- Docstrings (PEP 257) + type annotations.
-- Dependency mgmt via uv + virtual envs.
-- Code style via Ruff.
-- CI/CD via GitHub/GitLab.
-- Code snippets optimized for clarity.
+# Project Information
+- Project Lead: Rob Royce ([@RobRoyce](https://github.com/RobRoyce))
+- Project Start: January 1, 2025
+- Project Status: Active Development
+- Repository: https://github.com/RobRoyce/ros_to_markdown
+- License: Apache 2.0
+- Language: Python
+- Dependencies: ROS (Noetic, Humble, Iron, Rolling), Python (3.8, 3.10, 3.11, 3.12)
+- Todays Date: Current date/time MUST be requested from user when needed
 
-# ROS Development
-- **ROS1 (Noetic Ninjemys)**: EOL May 2025; uses Python 3.8 on Ubuntu 20.04.
-- **ROS2** (focus on a single distro at a time):
-  - **Iron Irwini**: EOL Dec 2027; Ubuntu 22.04 + Python 3.10.
-  - **Humble Hawksbill**: EOL May 2027; Ubuntu 22.04 + Python 3.10.
-  - **Jazzy Jalisco**: EOL May 2029; Ubuntu 24.04 + Python 3.10.
-- Auto-detection of ROS1 vs. ROS2.  
-- For ROS1: `rospy/rlcpy + catkin_tools`; for ROS2: `rclpy + colcon + ament_index`.
-- Never mix ROS1 and ROS2 code unless explicitly asked.
-- Always specify the exact ROS/ROS2 distro + correct Ubuntu/Python versions when generating code.
+## Project Structure
 
-# ROS2 Code Generation & Best Practices
-- Adhere to standard ROS2 package structure (`package.xml`, `CMakeLists.txt`).
-- Provide code style/conventions for each ROS2 distro if needed.
-- If using Docker, specify official ROS images and relevant Docker settings (network, locale, `rosdep` usage).
-- Include comprehensive tests + debugging (use `ros2doctor` when applicable).
-- Use clear docstrings/comments explaining architecture.
-- For multi-ROS setups, maintain separate workspaces.
+```
+ros_to_markdown/
+├── src/ros_to_markdown/ # Main package source code
+│ ├── core/ # Core functionality
+│ ├── models/ # Data models
+│ └── utils/ # Utility functions
+├── tests/
+│ ├── core/ # Core functionality tests for unit testing using stubs, mocks, etc.
+│ ├── integration/ # Integration tests for use with actual ROS systems running in Docker
+│ └── test_helpers/ # Test utilities
+├── docs/ # Documentation
+├── docker/ # Docker configurations
+│ ├── Dockerfile.ros1 # ROS1 Noetic image
+│ ├── Dockerfile.ros2-humble # ROS2 Humble image
+│ ├── Dockerfile.ros2-iron # ROS2 Iron image
+│ ├── Dockerfile.ros2-jazzy # ROS2 Rolling/Jazzy image
+│ └── scripts/ # Docker helper scripts
+└── config/ # Configuration files
+├── pyproject.toml # Python package config
+├── .ruff.toml # Ruff linter config
+├── .coveragerc # Coverage configuration
+└── .dockerignore # Docker ignore patterns
+```
 
-# Project Overview: `ros_to_markdown`
-Generates Markdown from a ROS system (workspace, running system, or bag). Collects info on nodes, topics, services, actions, parameters, messages, and launch files. Exports to Markdown for use with LLMs.
+---
 
-**Global Rules**  
-- Add type annotations + docstrings (PEP 257) to all functions/classes.
-- Include return types where relevant.
-- Keep existing comments.
-- Create necessary files/folders.
-- Tests must have docstrings + use pytest.
-- Only generate code for one ROS version at a time.
+# System Prompts
+The following rules shall be used to guide the development of this project and any iteraction between the user and the Cursor agent.
 
-# Rules
+## How to organize your thoughts on this project
+There are several layers of abstraction to this project:
 
-- name: "Project Structure"
-  description: "Core file/directory layout"
-  paths:
-    - "src/ros_to_markdown/**/*.py"
-    - "tests/**/*.py"
-    - "docs/**/*.md"
-    - "docker/**/*"
-    - "pyproject.toml"
-    - "docker-compose.yml"
-    - ".gitignore"
-    - "README.md"
+- Stakeholders:
+    - The user ("me" or "I")
+    - Cursor Agent ("AI", "agent", or "you")
+    - The end-user of ros_to_markdown ("user")
+    - Human-AI Team (me and you, "we")
+- The project itself (`ros_to_markdown`) and all of its components, files, folders, etc.
+- The infrastructure we use to develop and test this project:
+    - Docker
+    - CI/CD pipelines
+    - IDEs (Cursor)
+- Agent-specific files:
+    - Cursor Rules: (this file)
+    - Cursor Scratchpad (your working memory)
+    - Cursor Notes (your long-term memory)
+- End-user ROS systems that will use this project and their respective idiosyncrasies:
+    - ROS version
+    - Ubuntu version
+    - Python version
+    - etc.
 
-- name: "Docker Configuration"
-  description: "Dockerfiles using official ROS images"
-  paths:
-    - "docker/Dockerfile.*"
-    - "docker/scripts/run-in-docker.sh"
-    - "docker-compose.yml"
-  rules:
-    - "Use official ROS images"
-    - "Minimize extra dependencies"
-    - "Separate configs for ROS1 vs. ROS2"
-    - "For Noetic Docker, watch for locale + `rosdep` setup"
-    - "For ROS2 Docker, follow official guidelines (colcon, etc.)"
-    - "Consider all of the ROS2 Dockerfiles when making a change to any of them"
-    - "Rolling/Jazzy Configuration:"
-      - "Temporarily using Python 3.11 from deadsnakes PPA (see cursornotes)"
-      - "Create virtual environment for package installation"
-      - "Set ROS_DISTRO=rolling until Jazzy release"
-      - "WARNING: Python version mismatch between ROS (3.12) and tests (3.11)"
-      - "Plan migration to system Python 3.12 (see docker.md)"
-    - "You must support both `docker compose` and `docker-compose` commands"
-    - "X11 Display Configuration:"
-      - "Linux: Use native X11 socket mounting"
-      - "WSL: Auto-detect WSL1/WSL2 and configure display (default to export DISPLAY=:0)"
-      - "macOS: Use host.docker.internal with XQuartz"
-      - "Windows: Support host.docker.internal"
-    - "Environment Variables:"
-      - "Use DISPLAY for X11 forwarding"
-      - "Use X11_VOLUME for platform-specific mounts"
-      - "Use DOCKER_EXTRA_HOSTS for host resolution"
-    - "Cross-Platform Support:"
-      - "Auto-detect operating system"
-      - "Handle platform-specific X11 setup"
-      - "Gracefully handle missing X11 server"
+When you are working on this project, you must keep all of these layers of abstraction in mind. You should focus on the project itself in your responses. The other abstractions should serve to inform your responses. If I want you to focus on any of the other abstractions, I will explicitly tell you to do so.
 
-- name: "Python Source"
-  description: "Python code style + structure"
-  paths:
-    - "src/ros_to_markdown/**/*.py"
-  rules:
-    - "Type annotations + PEP 257 docstrings"
-    - "Use Ruff for formatting"
+## Global Rules for AI
+- Do not hallucinate.
+- You are encouraged to create any necessary files/folders.
+- You are encouraged to keep a running log of your thoughts in the .cursorscratchpad file.
+- You are encouraged to use the .cursornotes file as an AI journal. 
+    - We will use this file together to track the development of the project over time.
+    - This will also serve as the basis for our CHANGELOG as we release new versions of the project.
+- You should optimize for readability, clarity, and conciseness.
 
-- name: "Tests"
-  description: "Test files"
-  paths:
-    - "tests/**/*.py"
-  rules:
-    - "Use pytest"
-    - "Docstring all tests"
+## Python Development
+- Project Structure:
+  - Clear, modular organization (src, tests, docs, config)
+  - Separate files by responsibility (models, services, controllers, utils)
+  - Consistent import organization and module hierarchy
+  - Tests must have docstrings + use pytest
+  - Maintain >90% test coverage
 
-- name: "Documentation"
-  description: "Markdown docs"
-  paths:
-    - "docs/**/*.md"
-    - "README.md"
+- Development Environment:
+  - Dependency management via virtual environments, pip, and containers
+  - Environment variable-based configuration with strong validation
+  - Code style enforcement via Ruff (includes formatting + linting)
 
-- name: "Build Configuration"
-  description: "Build + dependency configs"
-  paths:
-    - "pyproject.toml"
-    - ".ruff.toml"
+- Code Quality:
+  - Add type annotations + docstrings (PEP 257) to all functions, classes, and modules
+  - Robust error handling with contextual logging (via structlog)
+  - Automated testing via CI/CD pipelines
+  - Regular linting and documentation builds
 
-- name: "ROS Versioning"
-  description: "Selection + usage of ROS1/ROS2"
-  rules:
-    - "Ask user if unclear which version/distro"
-    - "No mixing (ROS1 vs. ROS2) unless asked"
-    - "Match correct Ubuntu/Python version:"
-      - "ROS1 Noetic: Ubuntu 20.04 + Python 3.8"
-      - "ROS2 Humble: Ubuntu 22.04 + Python 3.10"
-      - "ROS2 Iron: Ubuntu 22.04 + Python 3.10"
-      - "ROS2 Rolling/Jazzy: Ubuntu 24.04 + Python 3.11"
+## ROS Notes
+- We are primarily concerned with ROS1 (Noetic) and ROS2 (Iron, Humble, Rolling).
+- Rolling support is tentative because of various idiosyncrasies.
+- You should always be cognizant of the ROS distribution you are targeting when generating code.
+- I will specify the ROS distribution in the prompt when needed.
 
-- name: "Markdown Output Formatting"
-  description: "Markdown for code + commands"
-  rules:
-    - "Wrap Python code in ```python ... ```"
-    - "Wrap shell commands in ```bash ... ```"
-    - "Output extracted ROS data in detailed Markdown"
+## ROS Distribution Specifications
+- **ROS1 (Noetic Ninjemys)**:
+  - EOL May 2025
+  - Ubuntu 20.04 LTS + Python 3.8
+  - Core tools: `rospy`, `catkin_tools`
+  - Legacy support only - no new feature development
 
-- name: "Data Extraction to Markdown"
-  description: "Demonstrate data extraction logic"
-  rules:
-    - "Code blocks for data extraction"
-    - "Descriptive var names + docstrings"
+- **ROS2 Iron Irwini** (LTS):
+  - EOL Dec 2024
+  - Ubuntu 22.04 LTS + Python 3.10
+  - Core tools: `rclpy`, `colcon`, `ament_tools`
+  - Legacy support only - no new feature development
 
-- name: "Python Packaging"
-  description: "Packaging best practices"
-  rules:
-    - "ROS1 => package.xml (catkin); ROS2 => package.xml + setup.py (colcon)"
-    - "Maintain or update a README"
+- **ROS2 Humble Hawksbill** (LTS):
+  - EOL May 2027
+  - Ubuntu 22.04 LTS + Python 3.10
+  - Core tools: `rclpy`, `colcon`, `ament_tools`
+  - Maintenance mode only
+  
+- **ROS2 Rolling/Jazzy Jalisco** (Latest):
+  - EOL May 2029
+  - Ubuntu 24.04 LTS + Python 3.12
+  - Core tools: `rclpy`, `colcon`, `ament_tools`
+  - Referred to as "Rolling" henceforth but synonymous with "Jazzy"
 
-- name: "General Code Style"
-  description: "PEP 257 docstrings + clarity"
-  rules:
-    - "Use meaningful names"
-    - "Document all modules/classes/functions"
-    - "Minimize deep nesting"
-    - "Preserve existing comments"
+## File Organization
+- Project Structure:
+    - paths: ["src/**/*.py", "tests/**/*.py", "docs/**/*.md", "docker/**/*", "*.{toml,yml,md}"]
+    - rules: ["Follow defined directory layout", "Maintain modular organization"]
+    
+- Python Source:
+    - paths: ["src/ros_to_markdown/**/*.py"]
+    - rules: ["Type annotations + PEP 257 docstrings", "Use Ruff for formatting"]
 
-- name: "Commands"
-  description: "Typed commands for Cursor"
-  rules:
-    - "\"update docs\" => Use current conversation to update all Markdown files in the repository."
-    - "\"update cursorrules\" => Use current conversation to update the `.cursorrules` file itself."
-    - "\"update cursornotes\" => You MUST read the `.cursornotes` file and then update it with the new information."
+- Tests:
+    - paths: ["tests/**/*.py"]
+    - rules: ["Use pytest", "Docstring all tests", "Maintain >90% coverage"]
+
+- Documentation:
+    - paths: ["docs/**/*.md", "README.md"]
+    - rules: ["Keep docs current", "Follow Markdown standards"]
+
+## Docker & Environment
+- Base Images:
+    - rules: ["Use official ROS images", "Minimize dependencies", "Separate ROS1/ROS2 configs"]
+
+- Platform Support:
+    - rules: ["Support Linux, WSL, macOS, Windows", "Handle X11 display configuration per-platform", "Environment Variables: DISPLAY, X11_VOLUME, DOCKER_EXTRA_HOSTS"]
+    
+- Rolling/Jazzy Specifics:
+    - rules: ["Use Python 3.11 (temporary)", "Virtual env for packages", "ROS_DISTRO=rolling", "Plan 3.12 migration"]
+
+---
+
+# AI Commands
+When I submit a command to you, you MUST follow the procedure outlined in the command.
+
+- "update docs":
+    - procedure:
+        1. "Parse all Markdown files in docs/**/*.md and README.md"
+        2. "Extract relevant updates from conversation"
+        3. "Apply any relevant and useful updates"
+
+- "update rules":
+    - procedure:
+        1. "Parse .cursorrules file"
+        2. "Extract rule updates from conversation"
+        3. "Apply any relevant and useful updates"
+
+- "capture thoughts":
+    - procedure:
+        1. "You MUST read the .cursorscratchpad file"
+        2. "Extract relevant insights from current context"
+        3. "Interleave your thoughts with previous thoughts in the <SCRATCHPAD> buffer"
+        4. "You MUST write your thoughts in the <SCRATCHPAD> buffer"
+        5. "Consolidate your thoughts as necessary, grouping related thoughts together"
+
+- "update cursornotes":
+    - procedure:
+        1. "You MUST read the .cursornotes and .cursorscratchpad files"
+        2. "Consolidate previous thoughts from <SCRATCHPAD>"
+        3. "Integrate new information from current conversation"
+        4. "Format as dated entry, request date from user"
+        5. "Append to .cursornotes file"
+        6. "Clear <SCRATCHPAD> section in .cursorscratchpad"
