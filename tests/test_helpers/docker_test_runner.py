@@ -1,6 +1,7 @@
 import subprocess
 import sys
 from typing import List, Optional
+import os
 
 
 def run_tests_in_container(ros_version: str, test_path: Optional[str] = None) -> bool:
@@ -20,10 +21,21 @@ def run_tests_in_container(ros_version: str, test_path: Optional[str] = None) ->
     else:
         cmd.extend(['pytest', 'tests/core/test_ros_detector.py'])
     
+    if os.getenv('PYTEST_ADDOPTS'):
+        cmd.extend(os.getenv('PYTEST_ADDOPTS').split())
+    
     try:
-        subprocess.run(cmd, check=True)
+        result = subprocess.run(cmd, check=False, capture_output=True, text=True)
+        if result.returncode != 0:
+            print(f"Error in {ros_version} environment:")
+            print(result.stderr)
+            return False
+        print(result.stdout)
+        if result.stderr:
+            print(result.stderr)
         return True
-    except subprocess.CalledProcessError:
+    except Exception as e:
+        print(f"Failed to run tests in {ros_version} environment: {str(e)}")
         return False
 
 
@@ -33,7 +45,7 @@ def main(test_path: Optional[str] = None) -> None:
     Args:
         test_path: Optional specific test path to run
     """
-    ros_versions = ['ros1', 'ros2-humble', 'ros2-iron']
+    ros_versions = ['ros1', 'ros2-humble', 'ros2-iron', 'ros2-jazzy']
     failed_versions: List[str] = []
     
     for version in ros_versions:

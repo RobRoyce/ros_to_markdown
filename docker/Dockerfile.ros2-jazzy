@@ -74,7 +74,15 @@ RUN python3.11 -m venv /home/$USERNAME/.venv
 RUN /bin/bash -c "source /opt/ros/rolling/setup.bash && \
     source /home/$USERNAME/.venv/bin/activate && \
     pip install --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir -e '.[ros2,dev]'"
+    pip install --no-cache-dir -e '.[ros2,dev]' && \
+    pip install --no-cache-dir \
+    pytest \
+    pytest-cov \
+    pytest-repeat \
+    pytest-rerunfailures \
+    pytest-timeout \
+    lark \
+    coverage"
 
 # Copy and setup launch script
 USER root

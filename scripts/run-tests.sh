@@ -14,7 +14,7 @@ show_help() {
     echo "  -v, --verbose  Show verbose output"
     echo "  -r, --ros1     Test only ROS1"
     echo "  -2, --ros2     Test only ROS2"
-    echo "  -d, --distro   Test specific distribution (noetic|humble|iron)"
+    echo "  -d, --distro   Test specific distribution (noetic|humble|iron|jazzy)"
     echo ""
     echo "Examples:"
     echo "  ./scripts/run-tests.sh                                    # Run all tests"
@@ -68,10 +68,10 @@ fi
 
 if [ ! -z "$SPECIFIC_DISTRO" ]; then
     case $SPECIFIC_DISTRO in
-        noetic|humble|iron)
+        noetic|humble|iron|jazzy)
             ;;
         *)
-            echo "Error: Invalid distribution. Must be one of: noetic, humble, iron"
+            echo "Error: Invalid distribution. Must be one of: noetic, humble, iron, jazzy"
             exit 1
             ;;
     esac
@@ -79,7 +79,7 @@ fi
 
 # Set up environment
 if [ $VERBOSE -eq 1 ]; then
-    export PYTEST_ADDOPTS="-vv"
+    export PYTEST_ADDOPTS="-v"
 fi
 
 # Run tests based on options
@@ -94,11 +94,14 @@ if [ ! -z "$SPECIFIC_DISTRO" ]; then
         iron)
             ./docker/scripts/run-in-docker.sh ros2-iron pytest ${TEST_PATH:-tests/}
             ;;
+        jazzy)
+            ./docker/scripts/run-in-docker.sh ros2-jazzy pytest ${TEST_PATH:-tests/}
+            ;;
     esac
 elif [ $ROS1_ONLY -eq 1 ]; then
     ./docker/scripts/run-in-docker.sh ros1 pytest ${TEST_PATH:-tests/}
 elif [ $ROS2_ONLY -eq 1 ]; then
-    for distro in humble iron; do
+    for distro in humble iron jazzy; do
         ./docker/scripts/run-in-docker.sh ros2-$distro pytest ${TEST_PATH:-tests/}
     done
 else
