@@ -4,8 +4,7 @@ services:
       context: .
       dockerfile: docker/Dockerfile.ros1
     volumes:
-      - .:/workspace
-      - ${X11_VOLUME:-/dev/null:/dev/null}
+      - .:/workspace:rw
     environment:
       - ROS_DISTRO=noetic
       - DISPLAY=${DISPLAY}
@@ -17,6 +16,7 @@ services:
       - ${DOCKER_EXTRA_HOSTS:-host.docker.internal:host-gateway}
     labels:
       - "com.ros_to_markdown.service=true"
+    working_dir: /workspace
 
   ros1-dev:
     extends: ros1
@@ -28,7 +28,7 @@ services:
       context: .
       dockerfile: docker/Dockerfile.ros2-humble
     volumes:
-      - .:/workspace
+      - .:/workspace:rw
       - /tmp/.X11-unix:/tmp/.X11-unix
     environment:
       - ROS_DISTRO=humble
@@ -41,6 +41,7 @@ services:
     privileged: true
     labels:
       - "com.ros_to_markdown.service=true"
+    working_dir: /workspace
 
   ros2-humble-dev:
     extends: ros2-humble
@@ -52,7 +53,7 @@ services:
       context: .
       dockerfile: docker/Dockerfile.ros2-iron
     volumes:
-      - .:/workspace
+      - .:/workspace:rw
       - /tmp/.X11-unix:/tmp/.X11-unix
     environment:
       - ROS_DISTRO=iron
@@ -65,6 +66,7 @@ services:
     privileged: true
     labels:
       - "com.ros_to_markdown.service=true"
+    working_dir: /workspace
 
   ros2-iron-dev:
     extends: ros2-iron
@@ -76,7 +78,7 @@ services:
       context: .
       dockerfile: docker/Dockerfile.ros2-jazzy
     volumes:
-      - .:/workspace
+      - .:/workspace:rw
       - /tmp/.X11-unix:/tmp/.X11-unix
     environment:
       - ROS_DISTRO=rolling
@@ -89,6 +91,7 @@ services:
     privileged: true
     labels:
       - "com.ros_to_markdown.service=true"
+    working_dir: /workspace
 
   ros2-jazzy-dev:
     extends: ros2-jazzy

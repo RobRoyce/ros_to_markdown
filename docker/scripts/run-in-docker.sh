@@ -61,18 +61,11 @@ configure_display
 
 # Check if either docker compose command is available
 if ! command -v docker &> /dev/null || { ! docker compose version &> /dev/null && ! command -v docker-compose &> /dev/null; }; then
-    echo "Error: Docker and/or Docker Compose is not installed. Please install:"
-    echo "1. Install Docker Engine: https://docs.docker.com/engine/install/"
-    echo "2. Install Docker Compose using one of these methods:"
-    echo "   - Install Docker Desktop (recommended)"
-    echo "   - Install standalone Docker Compose:"
-    echo "     sudo apt update && sudo apt install docker-compose-plugin"
+    echo "Error: Docker and/or Docker Compose is not installed..."
     exit 1
 fi
 
-# Usage: ./scripts/run-in-docker.sh [ros1|ros1-dev|ros2-humble|ros2-humble-dev|ros2-iron|ros2-iron-dev|ros2-jazzy|ros2-jazzy-dev] [command]
-# Example: ./scripts/run-in-docker.sh ros1 pytest tests/
-
+# Usage: ./scripts/run-in-docker.sh [ros1|ros1-dev|ros2-humble|...] [command]
 ROS_VERSION=$1
 shift
 COMMAND=$@
@@ -82,14 +75,17 @@ case $ROS_VERSION in
     "ros1"|"ros1-dev"|"ros2-humble"|"ros2-humble-dev"|"ros2-iron"|"ros2-iron-dev"|"ros2-jazzy"|"ros2-jazzy-dev")
         ;;
     *)
-        echo "Error: First argument must be one of: ros1, ros1-dev, ros2-humble, ros2-humble-dev, ros2-iron, ros2-iron-dev, ros2-jazzy, ros2-jazzy-dev"
-        echo "Usage: ./scripts/run-in-docker.sh [ros1|ros1-dev|ros2-humble|ros2-humble-dev|ros2-iron|ros2-iron-dev|ros2-jazzy|ros2-jazzy-dev] [command]"
+        echo "Error: First argument must be one of: ros1, ros1-dev..."
         exit 1
         ;;
 esac
 
-# Run docker compose with the appropriate command and interactive TTY
-if ! run_docker_compose "run --rm -it --remove-orphans $ROS_VERSION $COMMAND"; then
+# Add these environment variables before running tests
+export COVERAGE_FILE=.coverage
+export PYTHONPATH=/workspace/src:$PYTHONPATH
+
+# Run docker compose with the command
+if ! run_docker_compose "run --rm -it $ROS_VERSION $COMMAND"; then
     echo "Error: Failed to run docker compose command"
     exit 1
 fi

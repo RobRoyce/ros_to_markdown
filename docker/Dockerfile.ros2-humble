@@ -33,13 +33,11 @@ RUN groupadd --gid $USER_GID $USERNAME \
 RUN rosdep fix-permissions && \
     su - $USERNAME -c "rosdep update"
 
-# Set up the main workspace
-WORKDIR /workspace
-RUN chown -R $USERNAME:$USERNAME /workspace
-
-# Create and set up sample workspace
-RUN mkdir -p /sample_ws && \
-    chown -R $USERNAME:$USERNAME /sample_ws
+# Create and set up workspaces
+RUN mkdir -p /opt/ros/ws/src && \
+    chown -R $USERNAME:$USERNAME /opt/ros/ws && \
+    mkdir -p /home/$USERNAME/ws/src && \
+    chown -R $USERNAME:$USERNAME /home/$USERNAME/ws
 
 # Copy package files
 COPY --chown=$USERNAME:$USERNAME pyproject.toml README.md ./
@@ -58,6 +56,10 @@ COPY docker/scripts/launch-ros2-test-env.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/launch-ros2-test-env.sh
 
 ENV PYTHONPATH=/workspace/src:$PYTHONPATH
+
+# Set up coverage directories
+RUN mkdir -p /home/$USERNAME/.pytest_cache && \
+    chown -R $USERNAME:$USERNAME /home/$USERNAME/.pytest_cache
 
 # Switch to non-root user
 USER $USERNAME

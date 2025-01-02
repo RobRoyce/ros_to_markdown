@@ -1,67 +1,142 @@
+"""Docker test runner for executing tests across ROS environments."""
+
+import os
 import subprocess
 import sys
 from typing import List, Optional
-import os
+from pathlib import Path
 
 
-def run_tests_in_container(ros_version: str, test_path: Optional[str] = None) -> bool:
-    """Run tests in a specific ROS Docker container.
+class DockerTestRunner:
+    """Manages test execution across different ROS Docker environments."""
+
+    ENVIRONMENTS = {
+        'ros1': 'noetic',
+        'ros2-humble': 'humble',
+        'ros2-iron': 'iron',
+        'ros2-jazzy': 'rolling'  # Using rolling until jazzy is released
+    }
+
+    def __init__(self, test_path: Optional[str] = None):
+        """Initialize the test runner.
+        
+        Args:
+            test_path: Optional path to specific test file or directory
+        """
+        self.test_path = test_path or 'tests/'
+        self.docker_script = './docker/scripts/run-in-docker.sh'
+
+    def run_tests(self) -> bool:
+        """Run tests in all environments."""
+        all_passed = True
+        
+        for env, distro in self.ENVIRONMENTS.items():
+            print(f"\nRunning tests in {env} environment...")
+            
+            # Set environment variables for the test run
+            test_env = os.environ.copy()
+            test_env['ROS_DISTRO'] = distro
+            test_env['PYTEST_ADDOPTS'] = '-v --strict-markers'
+            test_env['ROS_WORKSPACE'] = '/home/ros/ws'
+            test_env['COVERAGE_FILE'] = '.coverage'
+            
+            try:
+                # Run pytest with coverage
+                subprocess.run(
+                    [
+                        self.docker_script,
+                        env,
+                        'python3',
+                        '-m',
+                        'pytest',
+                        '--cov=src/ros_to_markdown',
+                        '--cov-config=.coveragerc',
+                        '--cov-append',
+                        self.test_path
+                    ],
+                    env=test_env,
+                    check=True
+                )
+            except subprocess.CalledProcessError:
+                print(f"Tests failed in {env} environment")
+                all_passed = False
+                
+        return all_passed
+
+    def combine_coverage(self):
+        """Combine coverage data from multiple test runs."""
+        try:
+            # Install coverage if needed
+            subprocess.run(
+                [
+                    self.docker_script,
+                    'ros1',
+                    'python3',
+                    '-m',
+                    'pip',
+                    'install',
+                    'coverage'
+                ],
+                check=True
+            )
+            
+            # Combine coverage data
+            subprocess.run(
+                [
+                    self.docker_script,
+                    'ros1',
+                    'python3',
+                    '-m',
+                    'coverage',
+                    'combine'
+                ],
+                check=True
+            )
+            
+            # Generate report
+            subprocess.run(
+                [
+                    self.docker_script,
+                    'ros1',
+                    'python3',
+                    '-m',
+                    'coverage',
+                    'report'
+                ],
+                check=True
+            )
+        except subprocess.CalledProcessError as e:
+            print(f"Warning: Failed to combine coverage data: {e}")
+
+
+def setup_coverage():
+    """Ensure coverage directory exists and is writable."""
+    coverage_dir = Path("/workspace")
+    coverage_dir.mkdir(parents=True, exist_ok=True)
+    os.chmod(coverage_dir, 0o777)
+
+
+def run_tests_in_container(container_name: str) -> None:
+    """Run tests in the specified container with proper coverage setup."""
+    setup_coverage()
+    # ... rest of the function ...
+
+
+def main(args: List[str]) -> int:
+    """Main entry point for the test runner.
     
     Args:
-        ros_version: The ROS version/distro to test (e.g., 'ros1', 'ros2-humble')
-        test_path: Optional specific test path to run
+        args: Command line arguments
         
     Returns:
-        bool: True if tests passed, False otherwise
+        int: Exit code (0 for success, non-zero for failure)
     """
-    cmd = ['./docker/scripts/run-in-docker.sh', ros_version]
-    
-    if test_path:
-        cmd.extend(['pytest', test_path])
-    else:
-        cmd.extend(['pytest', 'tests/core/test_ros_detector.py'])
-    
-    if os.getenv('PYTEST_ADDOPTS'):
-        cmd.extend(os.getenv('PYTEST_ADDOPTS').split())
-    
-    try:
-        result = subprocess.run(cmd, check=False, capture_output=True, text=True)
-        if result.returncode != 0:
-            print(f"Error in {ros_version} environment:")
-            print(result.stderr)
-            return False
-        print(result.stdout)
-        if result.stderr:
-            print(result.stderr)
-        return True
-    except Exception as e:
-        print(f"Failed to run tests in {ros_version} environment: {str(e)}")
-        return False
-
-
-def main(test_path: Optional[str] = None) -> None:
-    """Run tests across all ROS environments.
-    
-    Args:
-        test_path: Optional specific test path to run
-    """
-    ros_versions = ['ros1', 'ros2-humble', 'ros2-iron', 'ros2-jazzy']
-    failed_versions: List[str] = []
-    
-    for version in ros_versions:
-        print(f"\nRunning tests in {version} environment...")
-        if not run_tests_in_container(version, test_path):
-            failed_versions.append(version)
-    
-    if failed_versions:
-        print("\nTests failed in the following environments:")
-        for version in failed_versions:
-            print(f"- {version}")
-        sys.exit(1)
-    else:
-        print("\nAll tests passed in all environments!")
+    test_path = args[0] if len(args) > 0 else None
+    runner = DockerTestRunner(test_path)
+    success = runner.run_tests()
+    runner.combine_coverage()
+    return 0 if success else 1
 
 
 if __name__ == '__main__':
-    test_path = sys.argv[1] if len(sys.argv) > 1 else None
-    main(test_path) 
+    sys.exit(main(sys.argv[1:])) 

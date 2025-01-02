@@ -1,0 +1,21 @@
+[run]
+data_file = .coverage
+parallel = True
+source = src/ros_to_markdown
+relative_files = True
+
+[paths]
+source =
+    src/ros_to_markdown
+    /workspace/src/ros_to_markdown
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    pass
+    raise AssertionError
+    raise NotImplementedError
+    if TYPE_CHECKING: 

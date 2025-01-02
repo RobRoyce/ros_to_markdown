@@ -32,13 +32,11 @@ RUN groupadd --gid $USER_GID $USERNAME \
 RUN rosdep fix-permissions && \
     su - $USERNAME -c "rosdep update"
 
-# Set up the main workspace
-WORKDIR /workspace
-RUN chown -R $USERNAME:$USERNAME /workspace
-
-# Create and set up sample workspace
-RUN mkdir -p /sample_ws && \
-    chown -R $USERNAME:$USERNAME /sample_ws
+# Create and set up workspaces
+RUN mkdir -p /opt/ros/ws/src && \
+    chown -R $USERNAME:$USERNAME /opt/ros/ws && \
+    mkdir -p /home/$USERNAME/ws/src && \
+    chown -R $USERNAME:$USERNAME /home/$USERNAME/ws
 
 # Copy package files
 COPY --chown=$USERNAME:$USERNAME pyproject.toml README.md ./

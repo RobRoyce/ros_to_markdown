@@ -13,6 +13,7 @@ When adding entries:
 - Focus on "why" over "what" or "how"
 - You MUST ask the user what todays date is since you are not sure
 - You MUST NOT modify any of the notes, only add new ones
+- New entries must be appended to the end of the file
 
 Bad Example:
 ```
@@ -75,3 +76,27 @@ Why:
 - ROS2 Humble: ✓ Working with turtlesim demos
 - ROS2 Iron: ✓ Working with turtlesim demos
 - ROS2 Rolling/Jazzy: ✓ Working with turtlesim demos
+
+# Docker Configuration and Testing Improvements (2025-01-01)
+- Consolidated Docker configuration into docker-compose.yml for better maintainability
+- Implemented robust test coverage tracking across all ROS environments
+- Standardized volume mounting and working directory setup
+- Simplified command handling in run-in-docker.sh
+
+Why:
+- Need consistent behavior across all ROS distributions
+- Coverage data needs to persist across container runs
+- Complex shell escaping was causing cross-platform issues
+
+Key Changes:
+- Moved volume configuration to docker-compose.yml with explicit :rw flags
+- Centralized working directory configuration in compose file
+- Simplified run-in-docker.sh to focus on environment setup
+- Added coverage configuration with proper file permissions
+- Standardized test execution across all environments
+
+Lessons Learned:
+- Let Docker Compose handle path mounting and workspace setup
+- Keep shell scripts focused on environment setup and command delegation
+- Use explicit configuration over complex command-line arguments
+- Ensure proper permissions for coverage and test data persistence
