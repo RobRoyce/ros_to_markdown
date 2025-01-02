@@ -91,3 +91,81 @@ class ROSTestEnvironment:
             yield self
         finally:
             self.teardown() 
+
+"""Helper functions for ROS test environment setup."""
+
+import os
+import time
+import subprocess
+from ros_to_markdown.core.ros_detector import ROSDetector
+from ros_to_markdown.models.ros_components import ROSVersion
+
+
+def launch_turtlesim():
+    """Launch turtlesim node for either ROS1 or ROS2.
+    
+    Returns:
+        tuple: (core_process, turtlesim_process) - Processes that need to be terminated
+    """
+    ros_version = ROSDetector.detect_ros_version()
+    
+    if ros_version == ROSVersion.ROS1:
+        # Start roscore first
+        core_process = subprocess.Popen(
+            ["roscore"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        
+        # Give roscore time to start
+        time.sleep(2)
+        
+        # Launch turtlesim
+        turtlesim_process = subprocess.Popen(
+            ["rosrun", "turtlesim", "turtlesim_node"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=dict(os.environ, DISPLAY=os.environ.get("DISPLAY", ":0"))
+        )
+        
+        return core_process, turtlesim_process
+        
+    else:  # ROS2
+        # No need for core process in ROS2
+        turtlesim_process = subprocess.Popen(
+            ["ros2", "run", "turtlesim", "turtlesim_node"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=dict(os.environ, DISPLAY=os.environ.get("DISPLAY", ":0"))
+        )
+        
+        return None, turtlesim_process
+
+
+def verify_turtlesim_running():
+    """Verify that turtlesim node is running.
+    
+    Returns:
+        bool: True if turtlesim node is running
+    """
+    ros_version = ROSDetector.detect_ros_version()
+    
+    try:
+        if ros_version == ROSVersion.ROS1:
+            result = subprocess.run(
+                ["rosnode", "list"],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            return "/turtlesim" in result.stdout
+        else:
+            result = subprocess.run(
+                ["ros2", "node", "list"],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            return "/turtlesim" in result.stdout
+    except subprocess.CalledProcessError:
+        return False 

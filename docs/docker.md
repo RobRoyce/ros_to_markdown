@@ -111,6 +111,34 @@ Supported ROS distributions:
 
 ## Special Considerations for Ubuntu 24.04 (Rolling/Jazzy)
 
+### Current Python Version Challenge
+
+There is currently a significant architectural challenge in the Rolling/Jazzy environment:
+
+- **System State**: 
+  - ROS Rolling/Jazzy uses system Python 3.12
+  - Ubuntu 24.04 enforces strict system package management (PEP 668)
+  - System packages cannot be modified without `--break-system-packages`
+
+- **Current Workaround**:
+  - Using Python 3.11 from deadsnakes PPA for test environment
+  - Running tests in isolated virtual environment
+  - Maintaining compatibility layer between ROS and test environment
+
+- **Known Issues**:
+  - Version mismatch between ROS (3.12) and tests (3.11)
+  - Potential ABI compatibility issues with ROS packages
+  - Not testing against actual production Python version
+
+- **Future Plans**:
+  - Migration to Python 3.12 for test infrastructure
+  - Proper isolation techniques for system Python
+  - Container-based test isolation approach
+
+This is a temporary solution while we develop a proper approach to handle
+Ubuntu 24.04's Python package restrictions. See `.cursornotes` for detailed
+context and decision history.
+
 The Rolling/Jazzy environment requires special handling due to Ubuntu 24.04's Python package management:
 
 1. Uses Python 3.11 from deadsnakes PPA instead of system Python 3.12

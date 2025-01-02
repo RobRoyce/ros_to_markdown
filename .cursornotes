@@ -61,15 +61,31 @@ Why:
 - Platform-agnostic X11 setup simplifies cross-platform development and testing
 
 # Rolling/Jazzy Docker Support (2025-01-01)
-- Implemented Python 3.11 support via deadsnakes PPA for Ubuntu 24.04 compatibility
+- Temporarily using Python 3.11 via deadsnakes PPA despite system Python 3.12
 - Created virtual environment solution for externally-managed Python packages
 - Developed robust user creation handling for pre-existing UID/GID conflicts
 - Verified turtlesim demos across all ROS versions
 
 Why:
-- Ubuntu 24.04 requires special Python package management
+- Ubuntu 24.04's system Python 3.12 has strict package management (PEP 668)
 - Rolling base image has pre-existing user that needs careful handling
 - Virtual environment provides clean isolation for development dependencies
+- KNOWN ISSUE: This creates a version mismatch between ROS (3.12) and our tests (3.11)
+
+# Python Version Mismatch in Rolling/Jazzy (2025-01-01)
+- Currently running tests in Python 3.11 while ROS uses 3.12
+- This is a temporary solution that needs to be addressed
+- Potential issues with ABI compatibility and ROS package interactions
+
+Why:
+- Ubuntu 24.04 enforces strict system package management
+- ROS Rolling/Jazzy uses system Python 3.12
+- Our test infrastructure currently requires more flexible package management
+
+TODO:
+- Plan migration to Python 3.12 for test infrastructure
+- Investigate proper isolation techniques for system Python
+- Consider container-based test isolation approach
 
 # Project Status Notes
 - ROS1 Noetic: ✓ Working with turtlesim demos
