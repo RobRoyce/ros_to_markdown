@@ -1,57 +1,64 @@
-FROM ros:iron
+FROM osrf/ros:iron-desktop-full
 
-# Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install system dependencies
+# Install system dependencies and ROS packages all at once to reduce layers
 RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-pytest \
-    python3-venv \
     python3-setuptools \
     python3-wheel \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install ROS-specific packages
-RUN apt-get update && apt-get install -y \
-    ros-iron-turtlesim \
+    python3-empy \
+    python3-lark \
     python3-colcon-common-extensions \
+    ros-iron-turtlesim \
     ros-iron-joy \
+    git \
+    sudo \
     && rm -rf /var/lib/apt/lists/*
 
-# Install additional tools
-RUN apt-get update && apt-get install -y \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+# Create a non-root user
+ARG USERNAME=ros
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+
+# Create the user
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME
+
+# Set up rosdep under the new user
+RUN rosdep fix-permissions && \
+    su - $USERNAME -c "rosdep update"
 
 # Set up the main workspace
 WORKDIR /workspace
+RUN chown -R $USERNAME:$USERNAME /workspace
 
-# Create and activate a virtual environment
-RUN python3 -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-ENV VIRTUAL_ENV="/opt/venv"
+# Create and set up sample workspace
+RUN mkdir -p /sample_ws && \
+    chown -R $USERNAME:$USERNAME /sample_ws
 
 # Copy package files
-COPY pyproject.toml README.md ./
-
-# Standard pip installation
-RUN /opt/venv/bin/pip3 install --no-cache-dir --upgrade pip setuptools wheel && \
-    /opt/venv/bin/pip3 install --no-cache-dir hatchling lark
+COPY --chown=$USERNAME:$USERNAME pyproject.toml README.md ./
 
 # Create source directory and copy code
 RUN mkdir -p src/ros_to_markdown
-COPY src/ros_to_markdown src/ros_to_markdown/
-COPY tests tests/
+COPY --chown=$USERNAME:$USERNAME src/ros_to_markdown src/ros_to_markdown/
+COPY --chown=$USERNAME:$USERNAME tests tests/
 
-# Install package
+# Install the package directly (no venv)
 RUN /bin/bash -c "source /opt/ros/iron/setup.bash && \
-    /opt/venv/bin/pip3 install --no-cache-dir -e '.[ros2,dev]'"
+    pip3 install --no-cache-dir -e '.[ros2,dev]'"
 
 # Copy and setup launch script
 COPY docker/scripts/launch-ros2-test-env.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/launch-ros2-test-env.sh
 
 ENV PYTHONPATH=/workspace/src:$PYTHONPATH
+
+# Switch to non-root user
+USER $USERNAME
 
 CMD ["/bin/bash"] 

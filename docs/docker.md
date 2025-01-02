@@ -2,16 +2,17 @@
 
 This project uses Docker to provide isolated development environments for both ROS1 and ROS2. The Docker setup consists of:
 - A ROS1 (Noetic) environment
-- ROS2 environments for supported distributions (Humble, Iron)
+- ROS2 environments for supported distributions (Humble, Iron, Rolling/Jazzy)
 
 ## Directory Structure
 ```
 docker/
-├── Dockerfile.ros1        # ROS1 Noetic image
-├── Dockerfile.ros2-humble # ROS2 Humble image
-├── Dockerfile.ros2-iron   # ROS2 Iron image
+├── Dockerfile.ros1         # ROS1 Noetic image
+├── Dockerfile.ros2-humble  # ROS2 Humble image
+├── Dockerfile.ros2-iron    # ROS2 Iron image
+├── Dockerfile.ros2-jazzy   # ROS2 Rolling/Jazzy image
 └── scripts/
-    └── run-in-docker.sh   # Helper script for running commands
+    └── run-in-docker.sh    # Helper script for running commands
 ```
 
 ## Prerequisites
@@ -52,6 +53,9 @@ docker-compose build
 
 # ROS2 Iron
 ./docker/scripts/run-in-docker.sh ros2-iron pytest tests/
+
+# ROS2 Rolling/Jazzy
+./docker/scripts/run-in-docker.sh ros2-jazzy pytest tests/
 ```
 
 ## Helper Script Usage
@@ -59,7 +63,13 @@ docker-compose build
 The `run-in-docker.sh` script provides a convenient way to run commands in any ROS environment:
 
 ```bash
-./docker/scripts/run-in-docker.sh [ros1|ros2-humble|ros2-iron] [command]
+./docker/scripts/run-in-docker.sh [environment] [command]
+
+# Available environments:
+# - ros1, ros1-dev
+# - ros2-humble, ros2-humble-dev
+# - ros2-iron, ros2-iron-dev
+# - ros2-jazzy, ros2-jazzy-dev
 ```
 
 Examples:
@@ -71,16 +81,22 @@ Examples:
 # Run pytest in ROS2 Humble
 ./docker/scripts/run-in-docker.sh ros2-humble pytest tests/
 
-# Execute a Python script in ROS2 Iron
-./docker/scripts/run-in-docker.sh ros2-iron python my_script.py
+# Execute a Python script in ROS2 Rolling/Jazzy
+./docker/scripts/run-in-docker.sh ros2-jazzy python my_script.py
 ```
 
 ## Available Environments
 
 Each ROS version has three service variants:
-- Base service (e.g., `ros1`, `ros2-humble`, `ros2-iron`)
+- Base service (e.g., `ros1`, `ros2-humble`)
 - Development environment (e.g., `ros1-dev`, `ros2-humble-dev`)
 - Test environment (e.g., `test-ros1`, `test-ros2-humble`)
+
+Supported ROS distributions:
+- ROS1 Noetic (EOL: May 2025)
+- ROS2 Humble Hawksbill (EOL: May 2027)
+- ROS2 Iron Irwini (EOL: Dec 2027)
+- ROS2 Jazzy Jalisco (EOL: May 2029)
 
 ## Environment Details
 
@@ -89,6 +105,28 @@ Each ROS version has three service variants:
 | ROS1 Noetic   | Ubuntu 20.04   | Python 3.8     | Supported |
 | ROS2 Humble   | Ubuntu 22.04   | Python 3.10    | Supported |
 | ROS2 Iron     | Ubuntu 22.04   | Python 3.10    | Supported |
+| ROS2 Rolling  | Ubuntu 24.04   | Python 3.11*   | Supported |
+
+*Note: Rolling/Jazzy uses Python 3.11 from deadsnakes PPA due to Ubuntu 24.04's Python package management changes.
+
+## Special Considerations for Ubuntu 24.04 (Rolling/Jazzy)
+
+The Rolling/Jazzy environment requires special handling due to Ubuntu 24.04's Python package management:
+
+1. Uses Python 3.11 from deadsnakes PPA instead of system Python 3.12
+2. Creates a dedicated virtual environment for package installation
+3. Automatically activates the virtual environment in the container
+4. Uses ROS_DISTRO=rolling (will become jazzy upon official release)
+
+Example Rolling/Jazzy container usage:
+```bash
+# Development environment
+./docker/scripts/run-in-docker.sh ros2-jazzy-dev bash
+
+# The virtual environment is automatically activated
+# All pip installations should work without --break-system-packages
+pip install some-package
+```
 
 ## Development Workflow
 
@@ -106,29 +144,53 @@ The Docker setup provides:
 - **Consistent Builds**: Uses official ROS Docker images as base
 - **Clean Environment**: Automatic orphaned container cleanup
 - **Flexible Compose**: Supports both new `docker compose` and legacy `docker-compose`
+- **Cross-Platform**: Works on Linux, WSL, macOS, and Windows
+
+### Platform-Specific X11 Configuration
+
+#### Linux
+```bash
+# Handled automatically by run-in-docker.sh
+xhost +local:docker
+```
+
+#### Windows (WSL2)
+```bash
+# Handled automatically by run-in-docker.sh
+export DISPLAY=:0
+```
+
+#### macOS
+```bash
+# Install XQuartz first, then:
+xhost + 127.0.0.1
+```
 
 ### Troubleshooting
 
-If you encounter issues:
+Common issues and solutions:
 
-1. Verify Docker is running:
+1. X11 Display Issues
    ```bash
-   docker info
+   # Check X11 socket permissions
+   ls -la /tmp/.X11-unix/
+   
+   # Verify DISPLAY variable
+   echo $DISPLAY
    ```
 
-2. Check Docker Compose installation:
+2. Python Package Installation (Ubuntu 24.04/Rolling)
    ```bash
-   # Try either
-   docker compose version
-   # or
-   docker-compose --version
+   # Verify virtual environment activation
+   which python
+   # Should show: /home/ros/.venv/bin/python
    ```
 
-3. Ensure proper permissions:
+3. ROS Environment
    ```bash
-   # Add your user to the docker group
-   sudo usermod -aG docker $USER
-   # Log out and back in for changes to take effect
+   # Verify ROS distribution
+   echo $ROS_DISTRO
+   # Should match your target distribution
    ```
 
 ## Additional Resources
@@ -136,6 +198,7 @@ If you encounter issues:
 - [Docker Documentation](https://docs.docker.com/)
 - [ROS Docker Official Images](https://hub.docker.com/_/ros)
 - [ROS2 Docker Official Images](https://hub.docker.com/_/ros)
+- [Ubuntu 24.04 Python Changes (PEP 668)](https://peps.python.org/pep-0668/)
 
 ## Testing Infrastructure
 

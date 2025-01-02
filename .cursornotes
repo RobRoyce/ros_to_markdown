@@ -1,0 +1,77 @@
+# Cursor Agent Notes - Usage and Guidelines
+
+## Purpose
+This file tracks key decisions and lessons learned in the ros_to_markdown project, focusing on what matters most for future development. It's a quick reference, not exhaustive documentation.
+
+## Writing Guidelines
+When adding entries:
+- Keep entries brief and focused - aim for 3-5 key points per topic
+- Capture only significant architectural decisions or breaking changes
+- Include dates and impacted components
+- Omit code snippets unless absolutely essential
+- Save detailed implementations for the codebase or documentation
+- Focus on "why" over "what" or "how"
+- You MUST ask the user what todays date is since you are not sure
+- You MUST NOT modify any of the notes, only add new ones
+
+Bad Example:
+```
+# Docker Setup (YYYY-MM-DD)
+- Detailed step-by-step platform configs
+- Multiple code snippets showing implementations
+- Exhaustive environment variable listings
+- Verbose troubleshooting steps
+```
+
+Good Example:
+```
+# Docker Setup (YYYY-MM-DD)
+- Implemented cross-platform X11 handling via environment detection
+- Standardized display variables across Linux/WSL/macOS/Windows
+- Centralized configuration in docker-compose.yml for maintainability
+```
+
+Reference this file when making significant changes or understanding past decisions. Update via "update cursornotes" command.
+
+<CRITICAL>
+  You MUST NOT modify anything above the following line!
+</CRITICAL>
+
+---
+
+# Docker X11 Configuration (2025-01-01)
+- Chose environment-based platform detection over multiple compose files for simpler maintenance
+- Standardized display handling with smart defaults (DISPLAY=:0 for WSL) to improve cross-platform support
+- Used host.docker.internal for non-Linux platforms to unify networking approach
+
+Why:
+- Multiple compose files would have increased complexity and duplication
+- Platform-specific code is now centralized in run-in-docker.sh for easier updates
+- Environment variables provide flexibility while maintaining clean compose files
+
+# Test Environment Architecture (2025-01-01)
+- Separated dev and production containers for each ROS distribution
+- Implemented unified test runner across all ROS versions
+- Standardized X11 forwarding configuration across platforms
+
+Why:
+- Dev containers enable testing without impacting production images
+- Single test runner reduces maintenance overhead and ensures consistent behavior
+- Platform-agnostic X11 setup simplifies cross-platform development and testing
+
+# Rolling/Jazzy Docker Support (2025-01-01)
+- Implemented Python 3.11 support via deadsnakes PPA for Ubuntu 24.04 compatibility
+- Created virtual environment solution for externally-managed Python packages
+- Developed robust user creation handling for pre-existing UID/GID conflicts
+- Verified turtlesim demos across all ROS versions
+
+Why:
+- Ubuntu 24.04 requires special Python package management
+- Rolling base image has pre-existing user that needs careful handling
+- Virtual environment provides clean isolation for development dependencies
+
+# Project Status Notes
+- ROS1 Noetic: ✓ Working with turtlesim demos
+- ROS2 Humble: ✓ Working with turtlesim demos
+- ROS2 Iron: ✓ Working with turtlesim demos
+- ROS2 Rolling/Jazzy: ✓ Working with turtlesim demos
