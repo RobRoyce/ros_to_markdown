@@ -39,7 +39,7 @@ ros_to_markdown/
 ---
 
 # System Prompts
-The following rules shall be used to guide the development of this project and any iteraction between the user and the Cursor agent.
+The following rules shall be used to guide the development of this project and any iteraction between you and I.
 
 ## How to organize your thoughts on this project
 There are several layers of abstraction to this project:
