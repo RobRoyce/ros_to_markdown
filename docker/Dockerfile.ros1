@@ -78,5 +78,13 @@ RUN chmod +x /usr/local/bin/launch-ros1-test-env.sh
 # Add any additional setup or environment variables
 ENV PYTHONPATH=/workspace/src:$PYTHONPATH
 
-# Default command
+# Set up shell environment for ROS
+RUN echo 'source "/opt/ros/noetic/setup.bash"' >> /etc/bash.bashrc && \
+    echo 'if [ -f "/sample_ws/devel/setup.bash" ]; then source "/sample_ws/devel/setup.bash"; fi' >> /etc/bash.bashrc
+
+# Copy and setup entrypoint script
+COPY docker/scripts/ros1-entrypoint.sh /ros1-entrypoint.sh
+RUN chmod +x /ros1-entrypoint.sh
+
+ENTRYPOINT ["/ros1-entrypoint.sh"]
 CMD ["/bin/bash"]

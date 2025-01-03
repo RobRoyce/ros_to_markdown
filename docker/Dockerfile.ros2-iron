@@ -13,8 +13,13 @@ RUN apt-get update && apt-get install -y \
     python3-colcon-common-extensions \
     ros-iron-turtlesim \
     ros-iron-joy \
+    ros-iron-ros2cli \
+    ros-iron-ros2topic \
+    ros-iron-ros2node \
+    ros-iron-ros2service \
     git \
     sudo \
+    ros-iron-rmw-cyclonedds-cpp \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user
@@ -56,7 +61,16 @@ RUN chmod +x /usr/local/bin/launch-ros2-test-env.sh
 
 ENV PYTHONPATH=/workspace/src:$PYTHONPATH
 
-# Switch to non-root user
-USER $USERNAME
+# Source ROS2 environment in .bashrc
+RUN echo "source /opt/ros/iron/setup.bash" >> /home/$USERNAME/.bashrc
 
+# Set up shell environment for ROS
+RUN echo 'source "/opt/ros/iron/setup.bash"' >> /etc/bash.bashrc && \
+    echo 'if [ -f "/sample_ws/install/setup.bash" ]; then source "/sample_ws/install/setup.bash"; fi' >> /etc/bash.bashrc
+
+# Copy and setup entrypoint script
+COPY docker/scripts/ros2-entrypoint.sh /ros2-entrypoint.sh
+RUN chmod +x /ros2-entrypoint.sh
+
+ENTRYPOINT ["/ros2-entrypoint.sh"]
 CMD ["/bin/bash"] 

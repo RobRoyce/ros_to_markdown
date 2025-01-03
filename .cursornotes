@@ -1,27 +1,30 @@
+#! .cursornotes
 # Cursor Agent Notes - Usage and Guidelines
 
 ## Purpose
 This file tracks key decisions and lessons learned in the ros_to_markdown project, focusing on what matters most for future development. It's a quick reference, not exhaustive documentation.
 
-## Writing Guidelines
-When adding entries:
-- Keep entries brief and focused - aim for 3-5 key points per topic
-- Capture only significant architectural decisions or breaking changes
-- Include dates and impacted components
-- Omit code snippets unless absolutely essential
-- Save detailed implementations for the codebase or documentation
-- Focus on "why" over "what" or "how"
-- You MUST ask the user what todays date is since you are not sure
-- You MUST NOT modify any of the notes, only add new ones
-- New entries must be appended to the end of the file
+<INSTRUCTIONS>
+  - Use the bottom of this file as a buffer to keep track of your thoughts.
+  - Once the user asks you to update cursornotes, you should consolidate those thoughts into a single cohesive entry.
+  - Keep entries brief and focused - aim for 3-5 key points per topic
+  - Capture only significant architectural decisions or breaking changes
+  - Include dates and impacted components
+  - Omit code snippets unless absolutely essential
+  - Save detailed implementations for the codebase or documentation
+  - Focus on "why" over "what" or "how"
+  - You MUST ask the user what todays date is since you are not sure
+  - You MUST NOT modify any of the notes, only add new ones
+  - New entries must be appended to the end of the file
+</INSTRUCTIONS>
 
 Bad Example:
 ```
 # Docker Setup (YYYY-MM-DD)
-- Detailed step-by-step platform configs
-- Multiple code snippets showing implementations
-- Exhaustive environment variable listings
-- Verbose troubleshooting steps
+- <Detailed step-by-step platform configs>
+- <Multiple code snippets showing implementations>
+- <Exhaustive environment variable listings>
+- <Verbose troubleshooting steps>
 ```
 
 Good Example:
@@ -119,3 +122,18 @@ Technical Details:
 - Centralized workspace configuration and environment setup
 - Implemented proper file permissions for coverage data persistence
 - Simplified shell scripts to focus on environment setup and command delegation
+
+# Graph Visualization and ROS2 Infrastructure (2025-01-02)
+- Completed graph visualization system with cycle detection and risk analysis
+- Transitioned from FastDDS to CycloneDDS across all ROS2 distributions
+- Achieved 100% test coverage with comprehensive test suite
+- Standardized package detection using importlib.util.find_spec
+- Improved code quality with comprehensive linting and documentation
+
+Why:
+- FastDDS had reliability issues in Docker (ref: ros2/rmw_fastrtps#5104)
+- CycloneDDS provides better multi-interface and video streaming support
+- Needed consistent behavior across all ROS2 distributions
+- Direct imports caused maintenance issues and unused code
+- Standardized error handling improves debugging in Docker environments
+- Clean code practices essential for long-term maintainability
