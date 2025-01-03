@@ -200,8 +200,10 @@ class ROS2Analyzer(GraphAnalyzer):
                     for pub_node in pub_nodes:
                         for sub_node in sub_nodes:
                             # Skip edges involving the analyzer node
-                            if ("graph_analyzer" not in pub_node and
-                                "graph_analyzer" not in sub_node):
+                            if (
+                                "graph_analyzer" not in pub_node
+                                and "graph_analyzer" not in sub_node
+                            ):
                                 edge = ROSGraphEdge(
                                     source=pub_node,
                                     target=sub_node,
@@ -215,7 +217,9 @@ class ROS2Analyzer(GraphAnalyzer):
             for service_name, type_list in services_and_types:
                 srv_type = type_list[0] if type_list else "unknown"
                 # Only add non-system services
-                if not any(service_name.startswith(prefix) for prefix in ['/parameter_events', '/rosout']):
+                if not any(
+                    service_name.startswith(prefix) for prefix in ["/parameter_events", "/rosout"]
+                ):
                     ros_services[service_name] = ROSService(
                         name=service_name,
                         type=srv_type,
@@ -225,8 +229,9 @@ class ROS2Analyzer(GraphAnalyzer):
 
             # Filter out system topics
             filtered_topics = {
-                name: topic for name, topic in topics.items()
-                if not any(name.startswith(prefix) for prefix in ['/parameter_events', '/rosout'])
+                name: topic
+                for name, topic in topics.items()
+                if not any(name.startswith(prefix) for prefix in ["/parameter_events", "/rosout"])
             }
 
             # Create graph

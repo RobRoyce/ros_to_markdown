@@ -38,7 +38,7 @@ def ensure_ros_environment():
         return False
 
     # If already sourced, continue with current process
-    if os.environ.get('ROS_SOURCED'):
+    if os.environ.get("ROS_SOURCED"):
         return True
 
     # Check if we need to source the environment
@@ -123,7 +123,9 @@ def main():
         print("```mermaid")
         print("graph LR")
         print(print_mermaid_style())
-        print(graph.to_mermaid(highlight_cycles=True, show_message_types=True, include_styles=False))
+        print(
+            graph.to_mermaid(highlight_cycles=True, show_message_types=True, include_styles=False)
+        )
         print("```")
 
         print("\nComplete Documentation:")

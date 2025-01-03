@@ -194,6 +194,7 @@ def test_turtlesim_package_available(ensure_workspace):
         ("noetic", ROSVersion.ROS1),
         ("humble", ROSVersion.ROS2),
         ("iron", ROSVersion.ROS2),
+        ("jazzy", ROSVersion.ROS2),
         ("rolling", ROSVersion.ROS2),
     ],
 )
@@ -394,7 +395,7 @@ def test_ros_detector_python_path():
         # Check for ROS2-specific Python paths
         distro = ROSDetector.get_ros_distro()
 
-        # Special handling for Rolling/Jazzy due to Python version differences
+        # Special handling for Jazzy due to Python version differences
         if distro in ["rolling", "jazzy"]:
             # ROS uses system Python (3.12), but our tests run in Python 3.11 venv
             ros_python_version = "3.12"  # ROS system Python version

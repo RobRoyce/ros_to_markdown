@@ -70,7 +70,8 @@ RUN echo 'source "/opt/ros/iron/setup.bash"' >> /etc/bash.bashrc && \
 
 # Copy and setup entrypoint script
 COPY docker/scripts/ros2-entrypoint.sh /ros2-entrypoint.sh
-RUN chmod +x /ros2-entrypoint.sh
+RUN chmod 755 /ros2-entrypoint.sh && \
+    chown $USERNAME:$USERNAME /ros2-entrypoint.sh
 
 ENTRYPOINT ["/ros2-entrypoint.sh"]
 CMD ["/bin/bash"] 

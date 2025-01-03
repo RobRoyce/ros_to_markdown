@@ -53,7 +53,19 @@ cd ros_to_markdown
 
 2. Build Docker images:
 ```bash
+# Build all images
 docker compose build
+
+# Build specific services
+./docker/scripts/build.sh ros2-humble ros2-humble-dev
+
+# Clean and rebuild
+./docker/scripts/build.sh --clean
+```
+
+To clean up project-specific images and containers:
+```bash
+./docker/scripts/cleanup-docker.sh
 ```
 
 3. Run tests:
@@ -83,6 +95,31 @@ Example usage:
 # Run tests in development container
 ./docker/scripts/run-in-docker.sh ros2-humble-dev pytest tests/
 ```
+
+#### Recommended Aliases
+
+Add these to your shell configuration:
+```bash
+# Docker management
+alias rtm-clean='./docker/scripts/cleanup-docker.sh'
+alias rtm-build='./docker/scripts/build.sh'
+
+# Development environments
+alias rtm-ros1='./docker/scripts/run-in-docker.sh -it ros1-dev'
+alias rtm-humble='./docker/scripts/run-in-docker.sh -it ros2-humble-dev'
+alias rtm-iron='./docker/scripts/run-in-docker.sh -it ros2-iron-dev'
+alias rtm-jazzy='./docker/scripts/run-in-docker.sh -it ros2-jazzy-dev'
+```
+
+#### ROS2 Jazzy Python Environment
+
+ROS2 Jazzy uses Python 3.12 for system packages but we use Python 3.11 in a virtual environment for compatibility. The PYTHONPATH is configured to handle both:
+
+1. Workspace code (`/workspace/src`)
+2. Python 3.11 venv packages (`/home/ros/.venv/lib/python3.11/site-packages`)
+3. ROS2 Python 3.12 packages (`/opt/ros/jazzy/lib/python3.12/site-packages`)
+
+Development containers (`ros2-jazzy-dev`) automatically activate the virtual environment.
 
 ## Testing
 

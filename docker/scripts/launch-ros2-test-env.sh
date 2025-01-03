@@ -3,8 +3,18 @@
 # Make the script executable and fail on errors
 set -e
 
+# Switch to ros user if we're root
+if [ "$(id -u)" = "0" ]; then
+    exec sudo -u ros "$0" "$@"
+fi
+
 # Source ROS2 environment
 source /opt/ros/${ROS_DISTRO}/setup.bash
+
+# Add Jazzy-specific handling if needed
+if [ "$ROS_DISTRO" = "jazzy" ]; then
+    source /home/ros/.venv/bin/activate
+fi
 
 # Create and build sample workspace if it doesn't exist
 SAMPLE_WS="/sample_ws"

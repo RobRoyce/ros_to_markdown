@@ -270,13 +270,14 @@ class ROSGraph:
 
     def _is_in_cycle(self, edge: ROSGraphEdge) -> bool:
         """Check if an edge is part of a cycle.
-        
+
         Args:
             edge: Edge to check
-            
+
         Returns:
             bool: True if edge is part of a cycle, False otherwise
         """
+
         def dfs(node: str, visited: Set[str], path: Set[str]) -> bool:
             """Depth-first search to find cycles."""
             visited.add(node)
@@ -301,14 +302,19 @@ class ROSGraph:
 
         return dfs(edge.source, visited, path)
 
-    def to_mermaid(self, highlight_cycles: bool = False, show_message_types: bool = False, include_styles: bool = True) -> str:
+    def to_mermaid(
+        self,
+        highlight_cycles: bool = False,
+        show_message_types: bool = False,
+        include_styles: bool = True,
+    ) -> str:
         """Convert the graph to Mermaid diagram format.
-        
+
         Args:
             highlight_cycles: Whether to highlight cyclic dependencies
             show_message_types: Whether to show message types on edges
             include_styles: Whether to include default Mermaid styles
-            
+
         Returns:
             str: Mermaid diagram representation
         """
@@ -316,21 +322,23 @@ class ROSGraph:
 
         # Only include styles if requested
         if include_styles:
-            lines.extend([
-                "graph LR",
-                "    %% Node and edge styling",
-                "    classDef default fill:#f9f9f9,stroke:#333,stroke-width:1px",
-                "    classDef cycleNode fill:#fff0f0,stroke:#d43f3f,stroke-width:2px",
-                "    classDef riskNode fill:#ffe0e0,stroke:#ff0000,stroke-width:2px",
-                "    classDef topicEdge stroke:#666,stroke-width:1px",
-                "    classDef serviceEdge stroke:#666,stroke-width:1px,stroke-dasharray:5 5",
-                "    classDef actionEdge stroke:#666,stroke-width:2px",
-                "    classDef cycleEdge stroke:#d43f3f,stroke-width:2px",
-                "    classDef riskEdge stroke:#ff0000,stroke-width:3px,stroke-dasharray:5 5",
-            ])
+            lines.extend(
+                [
+                    "graph LR",
+                    "    %% Node and edge styling",
+                    "    classDef default fill:#f9f9f9,stroke:#333,stroke-width:1px",
+                    "    classDef cycleNode fill:#fff0f0,stroke:#d43f3f,stroke-width:2px",
+                    "    classDef riskNode fill:#ffe0e0,stroke:#ff0000,stroke-width:2px",
+                    "    classDef topicEdge stroke:#666,stroke-width:1px",
+                    "    classDef serviceEdge stroke:#666,stroke-width:1px,stroke-dasharray:5 5",
+                    "    classDef actionEdge stroke:#666,stroke-width:2px",
+                    "    classDef cycleEdge stroke:#d43f3f,stroke-width:2px",
+                    "    classDef riskEdge stroke:#ff0000,stroke-width:3px,stroke-dasharray:5 5",
+                ]
+            )
 
         # Add nodes
-        for name, node in self.nodes.items():
+        for name, _node in self.nodes.items():
             safe_name = sanitize_mermaid_id(name)
             lines.append(f'    {safe_name}["{name}"]')
 

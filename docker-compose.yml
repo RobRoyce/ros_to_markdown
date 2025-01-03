@@ -1,3 +1,8 @@
+x-labels: &common-labels
+  com.ros-to-markdown: "true"
+  com.ros-to-markdown.project: "ros_to_markdown"
+  com.ros-to-markdown.maintainer: "Rob Royce"
+
 services:
   ros1:
     build:
@@ -15,13 +20,19 @@ services:
     extra_hosts:
       - ${DOCKER_EXTRA_HOSTS:-host.docker.internal:host-gateway}
     labels:
-      - "com.ros_to_markdown.service=true"
+      <<: *common-labels
+      com.ros-to-markdown.distro: "noetic"
+      com.ros-to-markdown.type: "base"
     working_dir: /workspace
     entrypoint: ["/ros1-entrypoint.sh"]
 
   ros1-dev:
     extends: ros1
     command: launch-ros1-test-env.sh
+    labels:
+      <<: *common-labels
+      com.ros-to-markdown.distro: "noetic"
+      com.ros-to-markdown.type: "dev"
 
   # ROS2 Humble services
   ros2-humble:
@@ -43,10 +54,13 @@ services:
       - RCUTILS_LOGGING_BUFFERED_STREAM=1
       - RCUTILS_LOGGING_USE_STDOUT=1
       - RCUTILS_COLORIZED_OUTPUT=1
+      - PYTHONPATH=/workspace/src:/opt/ros/humble/lib/python3.10/site-packages
     network_mode: host
     privileged: true
     labels:
-      - "com.ros_to_markdown.service=true"
+      <<: *common-labels
+      com.ros-to-markdown.distro: "humble"
+      com.ros-to-markdown.type: "base"
     working_dir: /workspace
     entrypoint: ["/ros2-entrypoint.sh"]
 
@@ -74,10 +88,13 @@ services:
       - RCUTILS_LOGGING_BUFFERED_STREAM=1
       - RCUTILS_LOGGING_USE_STDOUT=1
       - RCUTILS_COLORIZED_OUTPUT=1
+      - PYTHONPATH=/workspace/src:/opt/ros/iron/lib/python3.10/site-packages
     network_mode: host
     privileged: true
     labels:
-      - "com.ros_to_markdown.service=true"
+      <<: *common-labels
+      com.ros-to-markdown.distro: "iron"
+      com.ros-to-markdown.type: "base"
     working_dir: /workspace
     entrypoint: ["/ros2-entrypoint.sh"]
 
@@ -94,7 +111,7 @@ services:
       - .:/workspace:rw
       - /tmp/.X11-unix:/tmp/.X11-unix
     environment:
-      - ROS_DISTRO=rolling
+      - ROS_DISTRO=jazzy
       - DISPLAY=${DISPLAY}
       - QT_X11_NO_MITSHM=1
       - XAUTHORITY=/tmp/.Xauthority
@@ -105,16 +122,22 @@ services:
       - RCUTILS_LOGGING_BUFFERED_STREAM=1
       - RCUTILS_LOGGING_USE_STDOUT=1
       - RCUTILS_COLORIZED_OUTPUT=1
+      - PYTHONPATH=/workspace/src:/home/ros/.venv/lib/python3.11/site-packages:/opt/ros/jazzy/lib/python3.12/site-packages
     network_mode: host
     privileged: true
     labels:
-      - "com.ros_to_markdown.service=true"
+      <<: *common-labels
+      com.ros-to-markdown.distro: "jazzy"
+      com.ros-to-markdown.type: "base"
     working_dir: /workspace
-    entrypoint: ["/ros2-rolling-entrypoint.sh"]
+    entrypoint: ["/ros2-jazzy-entrypoint.sh"]
 
   ros2-jazzy-dev:
     extends: ros2-jazzy
     command: launch-ros2-test-env.sh
+    environment:
+      - VIRTUAL_ENV=/home/ros/.venv
+      - PATH=/home/ros/.venv/bin:$PATH
 
   # Test environments
   test-ros1:

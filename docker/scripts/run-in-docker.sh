@@ -118,7 +118,7 @@ case $ROS_VERSION in
         export ROS_DISTRO=iron
         ;;
     "ros2-jazzy"|"ros2-jazzy-dev")
-        export ROS_DISTRO=rolling
+        export ROS_DISTRO=jazzy
         ;;
     *)
         echo "Error: Invalid ROS version specified"

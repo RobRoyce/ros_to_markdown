@@ -108,3 +108,8 @@ else
     # Run all tests using the Python test runner
     python3 -m tests.test_helpers.docker_test_runner ${TEST_PATH}
 fi 
+
+# Add explicit Python version handling for Jazzy
+if [ "$ROS_DISTRO" = "jazzy" ]; then
+    export PYTHONPATH=/workspace/src:/opt/ros/jazzy/lib/python3.12/site-packages:$PYTHONPATH
+fi 

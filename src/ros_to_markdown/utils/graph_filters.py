@@ -1,7 +1,7 @@
 """Utilities for filtering and standardizing ROS computation graphs."""
 
 import re
-from typing import Dict, Set
+from typing import ClassVar, Dict, List, Set
 
 from ..models.ros_components import ROSGraph, ROSGraphEdge, ROSNode, ROSTopic
 
@@ -10,25 +10,25 @@ class GraphFilter:
     """Filter and standardize ROS computation graphs."""
 
     # Common system topics/nodes to filter out
-    FILTERED_TOPICS = {
+    FILTERED_TOPICS: ClassVar[Set[str]] = {
         "/parameter_events",  # ROS2 parameter events
-        "/rosout",           # ROS1 logging
-        "/clock",            # Simulation time
+        "/rosout",  # ROS1 logging
+        "/clock",  # Simulation time
     }
 
-    FILTERED_NODE_PATTERNS = [
+    FILTERED_NODE_PATTERNS: ClassVar[List[str]] = [
         r"^/graph_analyzer_\d+",  # Our analyzer nodes
-        r".*_launcher_\d+",       # Launcher nodes
-        r"^/rosout$",            # ROS1 logging node
+        r".*_launcher_\d+",  # Launcher nodes
+        r"^/rosout$",  # ROS1 logging node
     ]
 
     @classmethod
     def clean_graph(cls, graph: ROSGraph) -> ROSGraph:
         """Clean and standardize a ROS graph.
-        
+
         Args:
             graph: Original ROSGraph object
-            
+
         Returns:
             Cleaned ROSGraph object
         """
@@ -47,9 +47,11 @@ class GraphFilter:
         # Filter edges
         filtered_edges: Set[ROSGraphEdge] = set()
         for edge in graph.edges:
-            if (edge.source in filtered_nodes and
-                edge.target in filtered_nodes and
-                edge.topic_name not in cls.FILTERED_TOPICS):
+            if (
+                edge.source in filtered_nodes
+                and edge.target in filtered_nodes
+                and edge.topic_name not in cls.FILTERED_TOPICS
+            ):
                 filtered_edges.add(edge)
 
         # Create new graph with filtered components
@@ -61,13 +63,13 @@ class GraphFilter:
             actions=graph.actions,
             parameters=graph.parameters,
             version=graph.version,
-            distro=graph.distro
+            distro=graph.distro,
         )
 
     @staticmethod
     def standardize_node_name(name: str) -> str:
         """Standardize node names across ROS versions."""
         # Ensure leading slash
-        if not name.startswith('/'):
-            name = f'/{name}'
+        if not name.startswith("/"):
+            name = f"/{name}"
         return name
