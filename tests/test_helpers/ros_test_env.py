@@ -1,7 +1,7 @@
-from contextlib import contextmanager
 import os
 import subprocess
 import time
+from contextlib import contextmanager
 from typing import List
 
 from ros_to_markdown.core.ros_detector import ROSDetector

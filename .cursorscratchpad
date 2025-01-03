@@ -58,18 +58,56 @@
 
 <SCRATCHPAD>
   <PLANNING>
-
+    - [ ] Add git hooks to enforce linting and formatting (ruff)
+    - [ ] Create convenience script with various commands to run, test, and analyze the codebase
+    - [ ] Fix the launch_turtlesim.py script for Rolling/Jazzy
+    - [X] Improve ROS graph visualization
+      - [X] Fix duplicate styling in Mermaid output
+      - [X] Add cycle detection
+      - [X] Standardize node naming
+      - [X] Filter system topics/nodes
+    - [ ] Improve service node detection in ROS2
+    - [ ] Add action support to graph visualization
   </PLANNING>
 
   <ARCHITECTURAL_DECISIONS>
-
+    - Created GraphFilter utility class to standardize graph cleaning across ROS1/ROS2
+      - Centralized filtering logic for system topics and nodes
+      - Makes it easier to maintain consistent filtering rules
+    
+    - Implemented cycle detection in ROSGraph class
+      - Used DFS algorithm for efficiency
+      - Helps identify potential deadlock scenarios
+    
+    - Separated Mermaid styling from graph structure
+      - Moved styles to analyze_ros_graph.py
+      - Made styles optional via include_styles parameter
+      - Allows for consistent styling across different graph sources
   </ARCHITECTURAL_DECISIONS>
 
   <IMPLEMENTATION>
-
+    - Graph Filtering:
+      - Filter out common system topics (/parameter_events, /rosout)
+      - Filter out analyzer nodes and other system nodes
+      - Standardize node names with leading slashes
+    
+    - Visualization Improvements:
+      - Added sanitize_mermaid_id() for safe node/edge IDs
+      - Improved edge styling based on connection type
+      - Added message type labels option
+    
+    - ROS2-specific:
+      - Fixed node discovery and edge creation
+      - Added basic service handling (needs improvement)
+      - Properly handle namespaced nodes
   </IMPLEMENTATION>
 
   <HUMAN_AI_NOTES>
-
+    - Initial ROS2 graph was missing edges and had duplicate nodes
+    - Fixed issues with node filtering and edge creation
+    - Still need to improve service node detection in ROS2
+    - Consider adding support for visualizing ROS2 actions
+    - Graph visualization now shows proper connections between turtlesim nodes
+    - Need to consider adding QoS profile visualization for ROS2 topics
   </HUMAN_AI_NOTES>
 </SCRATCHPAD>

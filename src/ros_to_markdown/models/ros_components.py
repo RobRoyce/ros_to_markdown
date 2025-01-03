@@ -268,21 +268,56 @@ class ROSGraph:
     version: ROSVersion
     distro: str
 
-    def to_mermaid(self, highlight_cycles: bool = True, show_message_types: bool = False) -> str:
-        """Convert the ROS graph to Mermaid diagram format.
-
+    def _is_in_cycle(self, edge: ROSGraphEdge) -> bool:
+        """Check if an edge is part of a cycle.
+        
         Args:
-            highlight_cycles: Whether to highlight cycles in the graph
-            show_message_types: Whether to show message types on edges
-
+            edge: Edge to check
+            
         Returns:
-            Mermaid diagram as string
+            bool: True if edge is part of a cycle, False otherwise
         """
-        mermaid = ["graph LR"]
+        def dfs(node: str, visited: Set[str], path: Set[str]) -> bool:
+            """Depth-first search to find cycles."""
+            visited.add(node)
+            path.add(node)
 
-        # Add styling
-        mermaid.extend(
-            [
+            # Check all edges from this node
+            for e in self.edges:
+                if e.source == node:
+                    neighbor = e.target
+                    if neighbor not in visited:
+                        if dfs(neighbor, visited, path):
+                            return True
+                    elif neighbor in path:
+                        return True
+
+            path.remove(node)
+            return False
+
+        # Start DFS from the source node
+        visited: Set[str] = set()
+        path: Set[str] = set()
+
+        return dfs(edge.source, visited, path)
+
+    def to_mermaid(self, highlight_cycles: bool = False, show_message_types: bool = False, include_styles: bool = True) -> str:
+        """Convert the graph to Mermaid diagram format.
+        
+        Args:
+            highlight_cycles: Whether to highlight cyclic dependencies
+            show_message_types: Whether to show message types on edges
+            include_styles: Whether to include default Mermaid styles
+            
+        Returns:
+            str: Mermaid diagram representation
+        """
+        lines = []
+
+        # Only include styles if requested
+        if include_styles:
+            lines.extend([
+                "graph LR",
                 "    %% Node and edge styling",
                 "    classDef default fill:#f9f9f9,stroke:#333,stroke-width:1px",
                 "    classDef cycleNode fill:#fff0f0,stroke:#d43f3f,stroke-width:2px",
@@ -292,87 +327,34 @@ class ROSGraph:
                 "    classDef actionEdge stroke:#666,stroke-width:2px",
                 "    classDef cycleEdge stroke:#d43f3f,stroke-width:2px",
                 "    classDef riskEdge stroke:#ff0000,stroke-width:3px,stroke-dasharray:5 5",
-            ]
-        )
+            ])
 
-        # Find cycles and analyze risks
-        cycles = set()
-        cycle_edges = set()
-        risk_nodes = set()
-        risky_edges = set()
+        # Add nodes
+        for name, node in self.nodes.items():
+            safe_name = sanitize_mermaid_id(name)
+            lines.append(f'    {safe_name}["{name}"]')
 
-        if highlight_cycles:
-            # First find all cycles
-            for cycle in self.find_cycles():
-                cycles.update(cycle)
-                analysis = self.analyze_cycle(cycle)
-
-                # Track cycle edges
-                for edges in analysis.values():
-                    cycle_edges.update(edges)
-
-                # Check for risky patterns
-                has_risk, _ = self.has_deadlock_risk(cycle)
-                if has_risk:
-                    # Mark edges in risky cycles
-                    for edges in analysis.values():
-                        risky_edges.update(edges)
-                        # Mark nodes involved in risky cycles
-                        for edge in edges:
-                            risk_nodes.add(edge.source)
-                            risk_nodes.add(edge.target)
-
-        # Add nodes with styling
-        for node_name, _node in self.nodes.items():
-            safe_id = sanitize_mermaid_id(node_name)
-            node_def = f'    {safe_id}["{node_name}"]'
-
-            if highlight_cycles:
-                if node_name in risk_nodes:
-                    node_def += ":::riskNode"
-                elif node_name in cycles:
-                    node_def += ":::cycleNode"
-            mermaid.append(node_def)
-
-        # Add edges with styling
+        # Add edges
         for edge in self.edges:
-            src_id = sanitize_mermaid_id(edge.source)
-            tgt_id = sanitize_mermaid_id(edge.target)
+            source = sanitize_mermaid_id(edge.source)
+            target = sanitize_mermaid_id(edge.target)
+            label = f"|{edge.message_type}|" if show_message_types else ""
 
-            # Create edge label
-            label = edge.topic_name
-            if show_message_types and edge.message_type:
-                label += f"\\n({edge.message_type})"
-
-            # Determine edge style and format
-            edge_def = f"    {src_id} "
-
-            # Set base edge style and format based on type
             if edge.connection_type == "topic":
-                edge_def += f'-- "{label}" -->'
                 style = ":::topicEdge"
             elif edge.connection_type == "service":
-                edge_def += f'-. "{label}" .->'
                 style = ":::serviceEdge"
-            else:  # action
-                edge_def += f'== "{label}" ==>'
+            elif edge.connection_type == "action":
                 style = ":::actionEdge"
+            else:
+                style = ""
 
-            edge_def += f" {tgt_id}"
+            if highlight_cycles and self._is_in_cycle(edge):
+                style = ":::cycleEdge"
 
-            # Override style for risky and cycle edges only if highlighting is enabled
-            if highlight_cycles:
-                if edge in risky_edges:
-                    style = ":::riskEdge"
-                elif edge in cycle_edges and edge.connection_type in {"service", "action"}:
-                    style = ":::riskEdge"
-                elif edge in cycle_edges:
-                    style = ":::cycleEdge"
+            lines.append(f'    {source} -- "{label}" --> {target}{style}')
 
-            edge_def += style
-            mermaid.append(edge_def)
-
-        return "\n".join(mermaid)
+        return "\n".join(lines)
 
     def to_markdown(self) -> str:
         """Generate a complete markdown documentation of the ROS graph.
