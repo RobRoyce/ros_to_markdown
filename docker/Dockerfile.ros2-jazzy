@@ -99,8 +99,8 @@ RUN echo 'source "/opt/ros/rolling/setup.bash"' >> /etc/bash.bashrc && \
     echo 'if [ -f "/sample_ws/install/setup.bash" ]; then source "/sample_ws/install/setup.bash"; fi' >> /etc/bash.bashrc
 
 # Copy and setup entrypoint script
-COPY docker/scripts/ros2-rolling-entrypoint.sh /ros2-entrypoint.sh
-RUN chmod +x /ros2-entrypoint.sh
+COPY docker/scripts/ros2-rolling-entrypoint.sh /ros2-rolling-entrypoint.sh
+RUN chmod +x /ros2-rolling-entrypoint.sh
 
 # Set environment variables
 ENV PYTHONPATH=/workspace/src:/opt/ros/rolling/lib/python3.12/site-packages:$PYTHONPATH

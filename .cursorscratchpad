@@ -58,18 +58,35 @@
 
 <SCRATCHPAD>
   <PLANNING>
-
+    - [X] Fixed permission issues in Humble Dockerfile
+    - [X] Fixed pytest not found error
+    - [X] Fixed coverage installation warning
+    - [X] Verified tests passing across all distros
   </PLANNING>
 
   <ARCHITECTURAL_DECISIONS>
-
+    - Decided to keep ROS2 Humble aligned with Iron's simpler approach (no venv)
+    - Standardized script permissions and user context handling across Dockerfiles
+    - Maintained consistent environment setup across all ROS2 distros while respecting their differences
+    - Chose to pre-install coverage in Dockerfile rather than during test runs
   </ARCHITECTURAL_DECISIONS>
 
   <IMPLEMENTATION>
-
+    Key fixes implemented:
+    - Moved all root operations before USER switch in Dockerfiles
+    - Added pip local bin to PATH in entrypoint script
+    - Standardized pytest and coverage installation across containers
+    - Fixed permission issues with:
+      * /etc/bash.bashrc modifications
+      * Script installations and permissions
+      * Coverage directory access
   </IMPLEMENTATION>
 
   <HUMAN_AI_NOTES>
-
+    - User caught important detail about keeping ROS_DOMAIN_ID in entrypoint
+    - Tests now pass consistently across all distros (ROS1 Noetic, ROS2 Humble, Iron, Jazzy)
+    - Coverage reporting works without warnings
+    - Learned to be more careful about user context in Docker operations
+    - Keeping Humble close to Iron's configuration helps maintain consistency
   </HUMAN_AI_NOTES>
 </SCRATCHPAD>

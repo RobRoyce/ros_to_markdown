@@ -66,9 +66,9 @@ class DockerTestRunner:
     def combine_coverage(self):
         """Combine coverage data from multiple test runs."""
         try:
-            # Install coverage if needed
+            # Install coverage if needed (as non-root user)
             subprocess.run(
-                [self.docker_script, "ros1", "python3", "-m", "pip", "install", "coverage"],
+                [self.docker_script, "ros1", "sudo -u ros python3", "-m", "pip", "install", "--user", "coverage"],
                 check=True,
             )
 
