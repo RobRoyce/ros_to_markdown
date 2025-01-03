@@ -62,6 +62,7 @@
     - [X] Fixed pytest not found error
     - [X] Fixed coverage installation warning
     - [X] Verified tests passing across all distros
+    - [ ] Implement git hooks for linting and testing
   </PLANNING>
 
   <ARCHITECTURAL_DECISIONS>
