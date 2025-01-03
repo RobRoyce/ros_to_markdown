@@ -14,8 +14,13 @@ RUN apt-get update && apt-get install -y \
     python3-colcon-common-extensions \
     ros-humble-turtlesim \
     ros-humble-joy \
+    ros-humble-ros2cli \
+    ros-humble-ros2topic \
+    ros-humble-ros2node \
+    ros-humble-ros2service \
     git \
     sudo \
+    ros-humble-rmw-cyclonedds-cpp \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user
@@ -61,7 +66,16 @@ ENV PYTHONPATH=/workspace/src:$PYTHONPATH
 RUN mkdir -p /home/$USERNAME/.pytest_cache && \
     chown -R $USERNAME:$USERNAME /home/$USERNAME/.pytest_cache
 
-# Switch to non-root user
-USER $USERNAME
+# Source ROS2 environment in .bashrc
+RUN echo "source /opt/ros/humble/setup.bash" >> /home/$USERNAME/.bashrc
 
+# Set up shell environment for ROS
+RUN echo 'source "/opt/ros/${ROS_DISTRO}/setup.bash"' >> /etc/bash.bashrc && \
+    echo 'if [ -f "/sample_ws/install/setup.bash" ]; then source "/sample_ws/install/setup.bash"; fi' >> /etc/bash.bashrc
+
+# Copy and setup entrypoint script
+COPY docker/scripts/ros2-entrypoint.sh /ros2-entrypoint.sh
+RUN chmod +x /ros2-entrypoint.sh
+
+ENTRYPOINT ["/ros2-entrypoint.sh"]
 CMD ["/bin/bash"] 

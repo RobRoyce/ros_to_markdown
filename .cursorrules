@@ -93,6 +93,9 @@ When you are working on this project, you must keep all of these layers of abstr
   - Robust error handling with contextual logging (via structlog)
   - Automated testing via CI/CD pipelines
   - Regular linting and documentation builds
+  - Use importlib.util.find_spec for package availability checks
+  - Keep imports at top of files, organized by stdlib -> third-party -> local
+  - Maintain consistent error message format for better debugging
 
 ## ROS Notes
 - We are primarily concerned with ROS1 (Noetic) and ROS2 (Iron, Humble, Rolling).

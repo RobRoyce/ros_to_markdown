@@ -100,14 +100,31 @@ Supported ROS distributions:
 
 ## Environment Details
 
-| Environment    | Base OS        | Python Version | Status    |
-|---------------|----------------|----------------|-----------|
-| ROS1 Noetic   | Ubuntu 20.04   | Python 3.8     | Supported |
-| ROS2 Humble   | Ubuntu 22.04   | Python 3.10    | Supported |
-| ROS2 Iron     | Ubuntu 22.04   | Python 3.10    | Supported |
-| ROS2 Rolling  | Ubuntu 24.04   | Python 3.11*   | Supported |
+| Environment    | Base OS        | Python Version | DDS Implementation | Status    |
+|---------------|----------------|----------------|-------------------|-----------|
+| ROS1 Noetic   | Ubuntu 20.04   | Python 3.8     | N/A              | Supported |
+| ROS2 Humble   | Ubuntu 22.04   | Python 3.10    | CycloneDDS       | Supported |
+| ROS2 Iron     | Ubuntu 22.04   | Python 3.10    | CycloneDDS       | Supported |
+| ROS2 Rolling  | Ubuntu 24.04   | Python 3.11*   | CycloneDDS       | Supported |
 
 *Note: Rolling/Jazzy uses Python 3.11 from deadsnakes PPA due to Ubuntu 24.04's Python package management changes.
+
+## ROS2 DDS Configuration
+
+### DDS Implementation Choice
+
+This project uses CycloneDDS as the default DDS implementation for all ROS2 distributions due to:
+- More reliable node discovery in Docker environments
+- Better handling of multiple network interfaces
+- Improved performance for video streaming
+- Simpler configuration requirements
+- Better compatibility with Docker networking
+
+### Known Issues
+
+- FastDDS can have node discovery issues in Docker when multiple network interfaces are active
+- FastDDS may require complex XML configuration for optimal performance in Docker
+- Node discovery issues may manifest as "NODE_NAME_UNKNOWN" in graph visualization
 
 ## Special Considerations for Ubuntu 24.04 (Rolling/Jazzy)
 

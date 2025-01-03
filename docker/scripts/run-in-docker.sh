@@ -1,5 +1,26 @@
 #!/bin/bash
 
+# At the top of the file, add usage documentation
+USAGE="Usage: $0 [options] <ros-version> <command>
+
+Options:
+  -i, -t, -it    Docker interactive tty options
+
+Available ROS versions:
+  ros1, ros1-dev
+  ros2-humble, ros2-humble-dev
+  ros2-iron, ros2-iron-dev
+  ros2-jazzy, ros2-jazzy-dev
+
+Example:
+  $0 -it ros2-humble-dev ros2 run turtlesim turtle_teleop_key"
+
+# Add help option handling
+if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    echo "$USAGE"
+    exit 0
+fi
+
 # Configure X11 display based on OS
 configure_display() {
     case "$(uname -s)" in
@@ -66,16 +87,41 @@ if ! command -v docker &> /dev/null || { ! docker compose version &> /dev/null &
 fi
 
 # Usage: ./scripts/run-in-docker.sh [ros1|ros1-dev|ros2-humble|...] [command]
+# Parse options
+DOCKER_OPTS=""
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -i|-t|-it|-ti)
+            DOCKER_OPTS="$DOCKER_OPTS $1"
+            shift
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+# Get ROS version and command
 ROS_VERSION=$1
 shift
 COMMAND=$@
 
-# Validate ROS version/distro argument
+# Set ROS_DISTRO based on the service
 case $ROS_VERSION in
-    "ros1"|"ros1-dev"|"ros2-humble"|"ros2-humble-dev"|"ros2-iron"|"ros2-iron-dev"|"ros2-jazzy"|"ros2-jazzy-dev")
+    "ros1"|"ros1-dev")
+        export ROS_DISTRO=noetic
+        ;;
+    "ros2-humble"|"ros2-humble-dev")
+        export ROS_DISTRO=humble
+        ;;
+    "ros2-iron"|"ros2-iron-dev")
+        export ROS_DISTRO=iron
+        ;;
+    "ros2-jazzy"|"ros2-jazzy-dev")
+        export ROS_DISTRO=rolling
         ;;
     *)
-        echo "Error: First argument must be one of: ros1, ros1-dev..."
+        echo "Error: Invalid ROS version specified"
         exit 1
         ;;
 esac
@@ -84,8 +130,8 @@ esac
 export COVERAGE_FILE=.coverage
 export PYTHONPATH=/workspace/src:$PYTHONPATH
 
-# Run docker compose with the command
-if ! run_docker_compose "run --rm -it $ROS_VERSION $COMMAND"; then
+# Run docker compose with the command and environment variables
+if ! run_docker_compose "run --rm -e ROS_DISTRO=$ROS_DISTRO $DOCKER_OPTS $ROS_VERSION $COMMAND"; then
     echo "Error: Failed to run docker compose command"
     exit 1
 fi

@@ -21,9 +21,9 @@
 
   </IMPLEMENTATION>
 
-  <USER_NOTES description="Include any user-facing notes or feedback.">
+  <HUMAN_AI_NOTES description="Include any notes or feedback from me or AI.">
 
-  </USER_NOTES>
+  </HUMAN_AI_NOTES>
 </SCRATCHPAD_TEMPLATE>
 
 ---
@@ -44,10 +44,10 @@
     - Implemented feature X by modifying file Y and function Z
   </IMPLEMENTATION>
 
-  <USER_NOTES>
+  <HUMAN_AI_NOTES>
     - User wants to focus on feature Y for now
     - User recommended I update .cursorrules to include convention on code style
-  </USER_NOTES>
+  </HUMAN_AI_NOTES>
 </EXAMPLE_SCRATCHPAD>
 
 <CRITICAL>
@@ -57,5 +57,19 @@
 ---
 
 <SCRATCHPAD>
+  <PLANNING>
 
+  </PLANNING>
+
+  <ARCHITECTURAL_DECISIONS>
+
+  </ARCHITECTURAL_DECISIONS>
+
+  <IMPLEMENTATION>
+
+  </IMPLEMENTATION>
+
+  <HUMAN_AI_NOTES>
+
+  </HUMAN_AI_NOTES>
 </SCRATCHPAD>
