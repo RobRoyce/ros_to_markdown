@@ -14,7 +14,7 @@ class DockerTestRunner:
         "ros1": "noetic",
         "ros2-humble": "humble",
         "ros2-iron": "iron",
-        "ros2-jazzy": "rolling",  # Using rolling until jazzy is released
+        "ros2-jazzy": "jazzy",
     }
 
     def __init__(self, test_path: Optional[str] = None):

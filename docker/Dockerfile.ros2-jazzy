@@ -1,4 +1,4 @@
-FROM osrf/ros:rolling-desktop-full
+FROM osrf/ros:jazzy-desktop-full
 
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
@@ -24,11 +24,11 @@ RUN apt-get update && apt-get install -y \
     python3-pytest-timeout \
     python3-coverage \
     python3-yaml \
-    ros-rolling-turtlesim \
-    ros-rolling-joy \
+    ros-jazzy-turtlesim \
+    ros-jazzy-joy \
     git \
     sudo \
-    ros-rolling-rmw-cyclonedds-cpp \
+    ros-jazzy-rmw-cyclonedds-cpp \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user
@@ -58,7 +58,9 @@ RUN rosdep fix-permissions && \
 RUN mkdir -p /opt/ros/ws/src && \
     chown -R $USERNAME:$USERNAME /opt/ros/ws && \
     mkdir -p /home/$USERNAME/ws/src && \
-    chown -R $USERNAME:$USERNAME /home/$USERNAME/ws
+    chown -R $USERNAME:$USERNAME /home/$USERNAME/ws && \
+    mkdir -p /sample_ws && \
+    chown -R $USERNAME:$USERNAME /sample_ws
 
 # Set up the workspace
 WORKDIR /workspace
@@ -76,16 +78,16 @@ USER $USERNAME
 RUN python3.11 -m venv /home/$USERNAME/.venv
 
 # Install the package in development mode
-RUN /bin/bash -c "source /opt/ros/rolling/setup.bash && \
+RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
     source /home/$USERNAME/.venv/bin/activate && \
     pip install --upgrade pip && \
     pip install lark && \
     pip install -e '.[ros2,dev]' && \
     # Create symlinks for ROS Python packages
-    ln -s /opt/ros/rolling/lib/python3.12/site-packages/* /home/$USERNAME/.venv/lib/python3.11/site-packages/ || true"
+    ln -s /opt/ros/jazzy/lib/python3.12/site-packages/* /home/$USERNAME/.venv/lib/python3.11/site-packages/ || true"
 
 # Source the workspace in .bashrc
-RUN echo "source /opt/ros/rolling/setup.bash" >> /home/$USERNAME/.bashrc && \
+RUN echo "source /opt/ros/jazzy/setup.bash" >> /home/$USERNAME/.bashrc && \
     echo "source /home/$USERNAME/.venv/bin/activate" >> /home/$USERNAME/.bashrc
 
 # Copy and setup launch script
@@ -94,21 +96,21 @@ COPY docker/scripts/launch-ros2-test-env.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/launch-ros2-test-env.sh
 
 # Set up shell environment for ROS and venv
-RUN echo 'source "/opt/ros/rolling/setup.bash"' >> /etc/bash.bashrc && \
+RUN echo 'source "/opt/ros/jazzy/setup.bash"' >> /etc/bash.bashrc && \
     echo 'source "/home/ros/.venv/bin/activate"' >> /etc/bash.bashrc && \
     echo 'if [ -f "/sample_ws/install/setup.bash" ]; then source "/sample_ws/install/setup.bash"; fi' >> /etc/bash.bashrc
 
 # Copy and setup entrypoint script
-COPY docker/scripts/ros2-rolling-entrypoint.sh /ros2-rolling-entrypoint.sh
-RUN chmod +x /ros2-rolling-entrypoint.sh
+COPY docker/scripts/ros2-jazzy-entrypoint.sh /ros2-jazzy-entrypoint.sh
+RUN chmod +x /ros2-jazzy-entrypoint.sh
 
 # Set environment variables
-ENV PYTHONPATH=/workspace/src:/opt/ros/rolling/lib/python3.12/site-packages:$PYTHONPATH
+ENV PYTHONPATH=/workspace/src:/opt/ros/jazzy/lib/python3.12/site-packages:$PYTHONPATH
 ENV VIRTUAL_ENV=/home/$USERNAME/.venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Switch back to non-root user
 USER $USERNAME
 
-ENTRYPOINT ["/ros2-rolling-entrypoint.sh"]
+ENTRYPOINT ["/ros2-jazzy-entrypoint.sh"]
 CMD ["/bin/bash"] 

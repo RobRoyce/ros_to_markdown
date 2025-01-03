@@ -206,6 +206,7 @@ class TestROSDetector:
             ("melodic", ROSVersion.ROS1),
             ("humble", ROSVersion.ROS2),
             ("iron", ROSVersion.ROS2),
+            ("jazzy", ROSVersion.ROS2),
             ("rolling", ROSVersion.ROS2),
         ],
     )
@@ -242,7 +243,7 @@ class TestROSDetectorIntegration:
         # Verify the version matches the distro
         if distro in ["noetic", "melodic"]:
             assert version == ROSVersion.ROS1
-        elif distro in ["humble", "iron", "rolling"]:
+        elif distro in ["humble", "iron", "jazzy", "rolling"]:
             assert version == ROSVersion.ROS2
 
 

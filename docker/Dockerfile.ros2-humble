@@ -49,7 +49,9 @@ RUN rosdep fix-permissions && \
 RUN mkdir -p /opt/ros/ws/src && \
     chown -R $USERNAME:$USERNAME /opt/ros/ws && \
     mkdir -p /home/$USERNAME/ws/src && \
-    chown -R $USERNAME:$USERNAME /home/$USERNAME/ws
+    chown -R $USERNAME:$USERNAME /home/$USERNAME/ws && \
+    mkdir -p /sample_ws && \
+    chown -R $USERNAME:$USERNAME /sample_ws
 
 # Copy package files
 COPY --chown=$USERNAME:$USERNAME pyproject.toml README.md ./

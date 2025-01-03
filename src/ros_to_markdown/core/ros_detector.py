@@ -26,7 +26,7 @@ class ROSDetector:
         to import ROS-specific packages.
         """
         # Check ROS2 first
-        if os.environ.get("ROS_DISTRO") in ["foxy", "galactic", "humble", "iron", "rolling"]:
+        if os.environ.get("ROS_DISTRO") in ["foxy", "galactic", "humble", "iron", "jazzy", "rolling"]:
             try:
                 import_module("rclpy")
                 return ROSVersion.ROS2
