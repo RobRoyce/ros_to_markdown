@@ -74,6 +74,13 @@ When you are working on this project, you must keep all of these layers of abstr
     - We will use this file together to track the development of the project over time.
     - This will also serve as the basis for our CHANGELOG as we release new versions of the project.
 - You should optimize for readability, clarity, and conciseness.
+- After suggesting code changes that affect functionality or structure, you must:
+    1. Include a "Verification Steps" section at the end of your message
+    2. Show the exact commands to run the checks:
+       ```bash
+       ./scripts/check.sh
+       ```
+    3. Remind the user to run these checks before implementing the changes
 
 ## Python Development
 - Project Structure:
