@@ -4,9 +4,9 @@ This module provides functionality to detect and validate ROS installations,
 determine ROS versions, and inspect the ROS environment.
 """
 
+from importlib import import_module
 import os
 import subprocess
-from importlib import import_module
 from typing import Optional
 
 from ..models.ros_components import ROSVersion

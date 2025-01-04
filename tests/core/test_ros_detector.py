@@ -132,9 +132,11 @@ def ensure_workspace(request):
 class TestROSDetector:
     """Test suite for ROSDetector class."""
 
-    def test_detect_ros1_via_env(self, mock_ros1_env):
+    def test_detect_ros1_via_env(self, mock_ros_env):
         """Test ROS1 detection via environment variables."""
-        with patch("ros_to_markdown.core.ros_detector.import_module") as mock_import:
+        with mock_ros_env("ros1"), patch(
+            "ros_to_markdown.core.ros_detector.import_module"
+        ) as mock_import:
 
             def mock_import_module(name):
                 if name == "rospy":
@@ -251,40 +253,42 @@ class TestROSDetectorIntegration:
 class TestROSDetectorWorkspace:
     """Test suite for ROSDetector workspace-related functionality."""
 
-    def test_ros1_workspace_detection(self, mock_ros1_workspace):
+    def test_ros1_workspace_detection(self, mock_workspace):
         """Test detection of ROS1 workspace structure."""
-        with patch("subprocess.run") as mock_run:
-            mock_run.return_value = MagicMock(returncode=0)
+        with mock_workspace("ros1") as workspace:
+            with patch("subprocess.run") as mock_run:
+                mock_run.return_value = MagicMock(returncode=0)
+                version = ROSDetector.detect_ros_version()
+                assert version == ROSVersion.ROS1
 
-            version = ROSDetector.detect_ros_version()
-            assert version == ROSVersion.ROS1
+                # Verify workspace structure
+                assert os.path.exists(workspace / "devel/setup.bash")
+                assert os.path.exists(workspace / "build")
+                assert os.path.exists(workspace / "src")
 
-            # Verify workspace structure checks
-            assert os.path.exists("/workspace/devel/setup.bash")
-            assert os.path.exists("/workspace/build")
-            assert os.path.exists("/workspace/src")
-
-    def test_ros2_workspace_detection(self, mock_ros2_workspace):
+    def test_ros2_workspace_detection(self, mock_workspace):
         """Test detection of ROS2 workspace structure."""
-        with patch("subprocess.run") as mock_run, patch(
-            "ros_to_markdown.core.ros_detector.import_module"
-        ) as mock_import:
-            mock_run.return_value = MagicMock(returncode=0)
+        for distro in ["humble", "iron", "jazzy"]:
+            with mock_workspace(f"ros2-{distro}") as workspace, patch(
+                "ros_to_markdown.core.ros_detector.import_module"
+            ) as mock_import:
 
-            def mock_import_module(name):
-                if name == "rclpy":
-                    return MagicMock()
-                raise ImportError
+                def mock_import_module(name):
+                    if name == "rclpy":
+                        return MagicMock()
+                    raise ImportError
 
-            mock_import.side_effect = mock_import_module
+                mock_import.side_effect = mock_import_module
+                mock_run = MagicMock(returncode=0)
 
-            version = ROSDetector.detect_ros_version()
-            assert version == ROSVersion.ROS2
+                with patch("subprocess.run", return_value=mock_run):
+                    version = ROSDetector.detect_ros_version()
+                    assert version == ROSVersion.ROS2
 
-            # Verify workspace structure checks
-            assert os.path.exists("/workspace/install/setup.bash")
-            assert os.path.exists("/workspace/build")
-            assert os.path.exists("/workspace/src")
+                    # Verify workspace structure
+                    assert os.path.exists(workspace / "install/setup.bash")
+                    assert os.path.exists(workspace / "build")
+                    assert os.path.exists(workspace / "src")
 
     @pytest.mark.parametrize(
         "ros_distro,expected_dirs",

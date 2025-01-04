@@ -168,3 +168,14 @@ Technical Impact:
 - Better maintainability through centralized filtering logic
 - Enhanced visualization options while maintaining consistency
 - Foundation for future QoS profile visualization in ROS2
+
+# CLI Script Development and Jazzy Compatibility (2025-01-03)
+- Planned the creation of a CLI script to apply `ros_to_markdown` to a ROS workspace, focusing on automatic detection of ROS distribution and parsing of relevant files.
+- Identified critical Python 3.12 compatibility issues with the `analyze_ros_graph.py` script in Jazzy, necessitating a resolution for PEP 668 system package conflicts.
+- Emphasized the need for a reproducible virtual environment setup for Jazzy and documentation of workarounds for system-level Python dependencies.
+- Outlined a comprehensive testing and automation strategy for the development environment, including linting, formatting, and CI/CD pipeline integration.
+
+Why:
+- The CLI script aims to streamline the process of generating markdown documentation from ROS workspaces, enhancing usability.
+- Addressing Python compatibility is crucial for ensuring the functionality of ROS2 Jazzy with the latest Python version.
+- Automation of testing and documentation generation will improve development efficiency and maintainability.

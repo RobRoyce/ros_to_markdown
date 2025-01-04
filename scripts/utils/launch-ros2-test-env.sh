@@ -3,10 +3,10 @@
 # Make the script executable and fail on errors
 set -e
 
-# Switch to ros user if we're root
-if [ "$(id -u)" = "0" ]; then
-    exec sudo -u ros "$0" "$@"
-fi
+# # Switch to ros user if we're root
+# if [ "$(id -u)" = "0" ]; then
+#     exec sudo -u ros "$0" "$@"
+# fi
 
 # Source ROS2 environment
 source /opt/ros/${ROS_DISTRO}/setup.bash
@@ -136,7 +136,7 @@ EOL
     
     # Build the workspace
     colcon build
-    
+
     echo "Sample workspace created successfully!"
 fi
 
@@ -151,6 +151,9 @@ ros2 launch ros2_demos demo.launch.py    # Launch turtlesim with circle motion
 ros2 run turtlesim turtlesim_node       # Run turtlesim alone
 ros2 run ros2_demos turtle_circle       # Run circle motion node
 "
+
+# Add this line after sourcing the ROS2 environment
+echo -e "${GREEN}Using DISPLAY variable: $DISPLAY${NC}"
 
 # Execute the command passed to the script, or start an interactive shell
 if [ $# -eq 0 ]; then

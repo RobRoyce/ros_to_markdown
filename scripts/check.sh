@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
-# Exit on error
-set -e
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
 
 # Default values
 VERBOSE=0
@@ -13,6 +16,7 @@ TEST_ARGS=""
 while [[ $# -gt 0 ]]; do
     case $1 in
         -h|--help)
+            echo -e "${GREEN}Pre-commit Check Tool${NC}"
             echo "Usage: $0 [OPTIONS]"
             echo ""
             echo "Options:"
@@ -41,7 +45,7 @@ while [[ $# -gt 0 ]]; do
             break
             ;;
         *)
-            echo "Unknown option: $1"
+            echo -e "${RED}Unknown option: $1${NC}"
             exit 1
             ;;
     esac
@@ -49,25 +53,25 @@ done
 
 # Function to run linting
 run_lint() {
-    echo "Running Ruff linter and formatter..."
+    echo -e "${YELLOW}Running Ruff linter and formatter...${NC}"
     if [ $VERBOSE -eq 1 ]; then
-        ruff check . --verbose
+        ruff check . --fix --verbose
         ruff format . --verbose
     else
-        ruff check .
+        ruff check . --fix
         ruff format .
     fi
 }
 
 # Function to run tests
 run_tests() {
-    echo "Running tests..."
+    echo -e "${YELLOW}Running tests...${NC}"
     if [ -n "$TEST_ARGS" ]; then
-        ./scripts/run-tests.sh $TEST_ARGS
+        ./scripts/test-manager.sh test $TEST_ARGS
     elif [ $VERBOSE -eq 1 ]; then
-        ./scripts/run-tests.sh -v
+        ./scripts/test-manager.sh test -v
     else
-        ./scripts/run-tests.sh
+        ./scripts/test-manager.sh test
     fi
 }
 

@@ -93,9 +93,11 @@ def main():
         # Import appropriate analyzer based on version
         if ros_version == ROSVersion.ROS1:
             from ros_to_markdown.analyzers.ros1 import ROS1Analyzer
+
             analyzer = ROS1Analyzer()
         elif ros_version == ROSVersion.ROS2:
             from ros_to_markdown.analyzers.ros2 import ROS2Analyzer
+
             analyzer = ROS2Analyzer()
         else:
             print("Error: Unknown ROS version")

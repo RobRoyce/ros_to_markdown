@@ -29,6 +29,8 @@ RUN apt-get update && apt-get install -y \
     git \
     sudo \
     ros-jazzy-rmw-cyclonedds-cpp \
+    x11-apps \
+    mesa-utils \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user
@@ -92,7 +94,7 @@ RUN echo "source /opt/ros/jazzy/setup.bash" >> /home/$USERNAME/.bashrc && \
 
 # Copy and setup launch script
 USER root
-COPY docker/scripts/launch-ros2-test-env.sh /usr/local/bin/
+COPY scripts/utils/launch-ros2-test-env.sh /usr/local/bin/launch-ros2-test-env.sh
 RUN chmod +x /usr/local/bin/launch-ros2-test-env.sh
 
 # Set up shell environment for ROS and venv
@@ -101,7 +103,7 @@ RUN echo 'source "/opt/ros/jazzy/setup.bash"' >> /etc/bash.bashrc && \
     echo 'if [ -f "/sample_ws/install/setup.bash" ]; then source "/sample_ws/install/setup.bash"; fi' >> /etc/bash.bashrc
 
 # Copy and setup entrypoint script
-COPY docker/scripts/ros2-jazzy-entrypoint.sh /ros2-jazzy-entrypoint.sh
+COPY docker/entrypoints/ros2-jazzy-entrypoint.sh /ros2-jazzy-entrypoint.sh
 RUN chmod +x /ros2-jazzy-entrypoint.sh
 
 # Set environment variables

@@ -19,6 +19,8 @@ RUN apt-get update && apt-get install -y \
     ros-iron-ros2service \
     git \
     sudo \
+    x11-apps \
+    mesa-utils \
     ros-iron-rmw-cyclonedds-cpp \
     && rm -rf /var/lib/apt/lists/*
 
@@ -56,7 +58,7 @@ RUN /bin/bash -c "source /opt/ros/iron/setup.bash && \
     pip3 install --no-cache-dir -e '.[ros2,dev]'"
 
 # Copy and setup launch script
-COPY docker/scripts/launch-ros2-test-env.sh /usr/local/bin/
+COPY scripts/utils/launch-ros2-test-env.sh /usr/local/bin/launch-ros2-test-env.sh
 RUN chmod +x /usr/local/bin/launch-ros2-test-env.sh
 
 ENV PYTHONPATH=/workspace/src:$PYTHONPATH
@@ -69,7 +71,7 @@ RUN echo 'source "/opt/ros/iron/setup.bash"' >> /etc/bash.bashrc && \
     echo 'if [ -f "/sample_ws/install/setup.bash" ]; then source "/sample_ws/install/setup.bash"; fi' >> /etc/bash.bashrc
 
 # Copy and setup entrypoint script
-COPY docker/scripts/ros2-entrypoint.sh /ros2-entrypoint.sh
+COPY docker/entrypoints/ros2-entrypoint.sh /ros2-entrypoint.sh
 RUN chmod 755 /ros2-entrypoint.sh && \
     chown $USERNAME:$USERNAME /ros2-entrypoint.sh
 

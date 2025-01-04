@@ -62,8 +62,8 @@ COPY --chown=$USERNAME:$USERNAME src/ros_to_markdown src/ros_to_markdown/
 COPY --chown=$USERNAME:$USERNAME tests tests/
 
 # Copy and setup scripts (before USER switch)
-COPY docker/scripts/ros2-entrypoint.sh /ros2-entrypoint.sh
-COPY docker/scripts/launch-ros2-test-env.sh /usr/local/bin/
+COPY docker/entrypoints/ros2-entrypoint.sh /ros2-entrypoint.sh
+COPY scripts/utils/launch-ros2-test-env.sh /usr/local/bin/launch-ros2-test-env.sh
 RUN chmod 755 /ros2-entrypoint.sh && \
     chmod +x /usr/local/bin/launch-ros2-test-env.sh && \
     chown $USERNAME:$USERNAME /ros2-entrypoint.sh && \

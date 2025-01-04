@@ -10,6 +10,8 @@ services:
       dockerfile: docker/Dockerfile.ros1
     volumes:
       - .:/workspace:rw
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${XAUTHORITY:-$HOME/.Xauthority}:/root/.Xauthority:ro
     environment:
       - ROS_DISTRO=noetic
       - DISPLAY=${DISPLAY}

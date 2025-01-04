@@ -10,10 +10,26 @@ docker/
 ├── Dockerfile.ros1         # ROS1 Noetic image
 ├── Dockerfile.ros2-humble  # ROS2 Humble image
 ├── Dockerfile.ros2-iron    # ROS2 Iron image
-├── Dockerfile.ros2-jazzy   # ROS2 Jazzy image
-└── scripts/
-    └── run-in-docker.sh    # Helper script for running commands
+└── Dockerfile.ros2-jazzy   # ROS2 Jazzy image
 ```
+
+## Script Organization
+```
+scripts/
+├── docker-manager.sh     # Docker environment management
+├── test-manager.sh       # Test orchestration
+└── utils/               # Utility scripts
+    ├── analyze_ros_graph.py
+    ├── launch_turtlesim.py
+    ├── launch-ros1-test-env.sh
+    └── launch-ros2-test-env.sh
+```
+
+The `docker-manager.sh` script provides centralized management of Docker environments and replaces several legacy scripts:
+- Building and cleaning images
+- Running commands in containers
+- Managing test environments
+- Handling platform-specific configurations
 
 ## Prerequisites
 
@@ -46,24 +62,30 @@ docker-compose build
 2. Run commands in specific environments:
 ```bash
 # ROS1 Noetic
-./docker/scripts/run-in-docker.sh ros1 pytest tests/
+./scripts/docker-manager.sh run ros1 pytest tests/
 
 # ROS2 Humble
-./docker/scripts/run-in-docker.sh ros2-humble pytest tests/
+./scripts/docker-manager.sh run ros2-humble pytest tests/
 
 # ROS2 Iron
-./docker/scripts/run-in-docker.sh ros2-iron pytest tests/
+./scripts/docker-manager.sh run ros2-iron pytest tests/
 
 # ROS2 Jazzy
-./docker/scripts/run-in-docker.sh ros2-jazzy pytest tests/
+./scripts/docker-manager.sh run ros2-jazzy pytest tests/
 ```
 
 ## Helper Script Usage
 
-The `run-in-docker.sh` script provides a convenient way to run commands in any ROS environment:
+The `docker-manager.sh` script provides a convenient way to manage Docker environments:
 
 ```bash
-./docker/scripts/run-in-docker.sh [environment] [command]
+./scripts/docker-manager.sh [command] [options] [service...]
+
+Commands:
+  build         Build Docker images
+  run           Run a command in a container
+  clean         Clean Docker resources
+  prune         Remove all project resources
 
 # Available environments:
 # - ros1, ros1-dev
@@ -76,13 +98,13 @@ Examples:
 
 ```bash
 # Get an interactive shell in ROS1
-./docker/scripts/run-in-docker.sh ros1 bash
+./scripts/docker-manager.sh run ros1 bash
 
 # Run pytest in ROS2 Humble
-./docker/scripts/run-in-docker.sh ros2-humble pytest tests/
+./scripts/docker-manager.sh run ros2-humble pytest tests/
 
 # Execute a Python script in ROS2 Jazzy
-./docker/scripts/run-in-docker.sh ros2-jazzy python my_script.py
+./scripts/docker-manager.sh run ros2-jazzy python my_script.py
 ```
 
 ## Available Environments

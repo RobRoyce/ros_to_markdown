@@ -72,7 +72,7 @@ RUN /bin/bash -c "source /opt/ros/noetic/setup.bash \
     && pip3 install -e .[test]"
 
 # Copy launch script
-COPY docker/scripts/launch-ros1-test-env.sh /usr/local/bin/
+COPY scripts/utils/launch-ros1-test-env.sh /usr/local/bin/launch-ros1-test-env.sh
 RUN chmod +x /usr/local/bin/launch-ros1-test-env.sh
 
 # Add any additional setup or environment variables
@@ -83,7 +83,7 @@ RUN echo 'source "/opt/ros/noetic/setup.bash"' >> /etc/bash.bashrc && \
     echo 'if [ -f "/sample_ws/devel/setup.bash" ]; then source "/sample_ws/devel/setup.bash"; fi' >> /etc/bash.bashrc
 
 # Copy and setup entrypoint script
-COPY docker/scripts/ros1-entrypoint.sh /ros1-entrypoint.sh
+COPY docker/entrypoints/ros1-entrypoint.sh /ros1-entrypoint.sh
 RUN chmod +x /ros1-entrypoint.sh
 
 ENTRYPOINT ["/ros1-entrypoint.sh"]

@@ -1,9 +1,9 @@
 """Docker test runner for executing tests across ROS environments."""
 
 import os
+from pathlib import Path
 import subprocess
 import sys
-from pathlib import Path
 from typing import ClassVar, Dict, List, Optional
 
 
