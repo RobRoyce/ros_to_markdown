@@ -2,7 +2,7 @@
 
 This project uses Docker to provide isolated development environments for both ROS1 and ROS2. The Docker setup consists of:
 - A ROS1 (Noetic) environment
-- ROS2 environments for supported distributions (Humble, Iron, Rolling/Jazzy)
+- ROS2 environments for supported distributions (Humble, Iron, Jazzy)
 
 ## Directory Structure
 ```
@@ -10,10 +10,26 @@ docker/
 ├── Dockerfile.ros1         # ROS1 Noetic image
 ├── Dockerfile.ros2-humble  # ROS2 Humble image
 ├── Dockerfile.ros2-iron    # ROS2 Iron image
-├── Dockerfile.ros2-jazzy   # ROS2 Rolling/Jazzy image
-└── scripts/
-    └── run-in-docker.sh    # Helper script for running commands
+└── Dockerfile.ros2-jazzy   # ROS2 Jazzy image
 ```
+
+## Script Organization
+```
+scripts/
+├── docker-manager.sh     # Docker environment management
+├── test-manager.sh       # Test orchestration
+└── utils/               # Utility scripts
+    ├── analyze_ros_graph.py
+    ├── launch_turtlesim.py
+    ├── launch-ros1-test-env.sh
+    └── launch-ros2-test-env.sh
+```
+
+The `docker-manager.sh` script provides centralized management of Docker environments and replaces several legacy scripts:
+- Building and cleaning images
+- Running commands in containers
+- Managing test environments
+- Handling platform-specific configurations
 
 ## Prerequisites
 
@@ -46,24 +62,30 @@ docker-compose build
 2. Run commands in specific environments:
 ```bash
 # ROS1 Noetic
-./docker/scripts/run-in-docker.sh ros1 pytest tests/
+./scripts/docker-manager.sh run ros1 pytest tests/
 
 # ROS2 Humble
-./docker/scripts/run-in-docker.sh ros2-humble pytest tests/
+./scripts/docker-manager.sh run ros2-humble pytest tests/
 
 # ROS2 Iron
-./docker/scripts/run-in-docker.sh ros2-iron pytest tests/
+./scripts/docker-manager.sh run ros2-iron pytest tests/
 
-# ROS2 Rolling/Jazzy
-./docker/scripts/run-in-docker.sh ros2-jazzy pytest tests/
+# ROS2 Jazzy
+./scripts/docker-manager.sh run ros2-jazzy pytest tests/
 ```
 
 ## Helper Script Usage
 
-The `run-in-docker.sh` script provides a convenient way to run commands in any ROS environment:
+The `docker-manager.sh` script provides a convenient way to manage Docker environments:
 
 ```bash
-./docker/scripts/run-in-docker.sh [environment] [command]
+./scripts/docker-manager.sh [command] [options] [service...]
+
+Commands:
+  build         Build Docker images
+  run           Run a command in a container
+  clean         Clean Docker resources
+  prune         Remove all project resources
 
 # Available environments:
 # - ros1, ros1-dev
@@ -76,13 +98,13 @@ Examples:
 
 ```bash
 # Get an interactive shell in ROS1
-./docker/scripts/run-in-docker.sh ros1 bash
+./scripts/docker-manager.sh run ros1 bash
 
 # Run pytest in ROS2 Humble
-./docker/scripts/run-in-docker.sh ros2-humble pytest tests/
+./scripts/docker-manager.sh run ros2-humble pytest tests/
 
-# Execute a Python script in ROS2 Rolling/Jazzy
-./docker/scripts/run-in-docker.sh ros2-jazzy python my_script.py
+# Execute a Python script in ROS2 Jazzy
+./scripts/docker-manager.sh run ros2-jazzy python my_script.py
 ```
 
 ## Available Environments
@@ -105,9 +127,7 @@ Supported ROS distributions:
 | ROS1 Noetic   | Ubuntu 20.04   | Python 3.8     | N/A              | Supported |
 | ROS2 Humble   | Ubuntu 22.04   | Python 3.10    | CycloneDDS       | Supported |
 | ROS2 Iron     | Ubuntu 22.04   | Python 3.10    | CycloneDDS       | Supported |
-| ROS2 Rolling  | Ubuntu 24.04   | Python 3.11*   | CycloneDDS       | Supported |
-
-*Note: Rolling/Jazzy uses Python 3.11 from deadsnakes PPA due to Ubuntu 24.04's Python package management changes.
+| ROS2 Jazzy    | Ubuntu 24.04   | Python 3.12    | CycloneDDS       | Supported |
 
 ## ROS2 DDS Configuration
 
@@ -125,53 +145,6 @@ This project uses CycloneDDS as the default DDS implementation for all ROS2 dist
 - FastDDS can have node discovery issues in Docker when multiple network interfaces are active
 - FastDDS may require complex XML configuration for optimal performance in Docker
 - Node discovery issues may manifest as "NODE_NAME_UNKNOWN" in graph visualization
-
-## Special Considerations for Ubuntu 24.04 (Rolling/Jazzy)
-
-### Current Python Version Challenge
-
-There is currently a significant architectural challenge in the Rolling/Jazzy environment:
-
-- **System State**: 
-  - ROS Rolling/Jazzy uses system Python 3.12
-  - Ubuntu 24.04 enforces strict system package management (PEP 668)
-  - System packages cannot be modified without `--break-system-packages`
-
-- **Current Workaround**:
-  - Using Python 3.11 from deadsnakes PPA for test environment
-  - Running tests in isolated virtual environment
-  - Maintaining compatibility layer between ROS and test environment
-
-- **Known Issues**:
-  - Version mismatch between ROS (3.12) and tests (3.11)
-  - Potential ABI compatibility issues with ROS packages
-  - Not testing against actual production Python version
-
-- **Future Plans**:
-  - Migration to Python 3.12 for test infrastructure
-  - Proper isolation techniques for system Python
-  - Container-based test isolation approach
-
-This is a temporary solution while we develop a proper approach to handle
-Ubuntu 24.04's Python package restrictions. See `.cursornotes` for detailed
-context and decision history.
-
-The Rolling/Jazzy environment requires special handling due to Ubuntu 24.04's Python package management:
-
-1. Uses Python 3.11 from deadsnakes PPA instead of system Python 3.12
-2. Creates a dedicated virtual environment for package installation
-3. Automatically activates the virtual environment in the container
-4. Uses ROS_DISTRO=rolling (will become jazzy upon official release)
-
-Example Rolling/Jazzy container usage:
-```bash
-# Development environment
-./docker/scripts/run-in-docker.sh ros2-jazzy-dev bash
-
-# The virtual environment is automatically activated
-# All pip installations should work without --break-system-packages
-pip install some-package
-```
 
 ## Development Workflow
 
@@ -224,7 +197,7 @@ Common issues and solutions:
    echo $DISPLAY
    ```
 
-2. Python Package Installation (Ubuntu 24.04/Rolling)
+2. Python Package Installation (Ubuntu 24.04/Jazzy)
    ```bash
    # Verify virtual environment activation
    which python

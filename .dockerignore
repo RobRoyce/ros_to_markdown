@@ -1,4 +1,5 @@
 **/__pycache__
+**/.pytest_cache
 **/*.pyc
 **/*.pyo
 **/*.pyd
@@ -9,8 +10,8 @@ env/
 venv/
 .git
 .gitignore
-.pytest_cache
 .coverage
+.tox
 htmlcov/
 *.egg-info/
 dist/
@@ -18,4 +19,4 @@ build/
 .idea/
 .vscode/
 *.swp
-*.swo 
+*.swo

@@ -58,18 +58,124 @@
 
 <SCRATCHPAD>
   <PLANNING>
+    - [ ] Create a CLI script to apply ros_to_markdown to a ROS workspace
+      - [ ] MVP should:
+        - [ ] Automatically detect the ROS distribution
+        - [ ] Parse all ROS packages, launch files, README.md files, documentation files, etc. (basically everything meaningful that we can pull from a static workspace)
+        - [ ] Generate a markdown file for each ROS package
+        - [ ] If a ROS system is running, we should also pull information about the nodes, topics, services, etc.
+        - [ ] We also want to get the ROS graph
+        - [ ] All of these things should then be converted to a set of markdown files that have a meaningful structure
 
+    - [ ] Critical Python 3.12 Compatibility
+      - [ ] Resolve PEP 668 system package conflicts in Jazzy
+      - [ ] Create reproducible virtual environment setup for Jazzy
+      - [ ] Document workarounds for system-level Python dependencies
+      - [ ] Test ROS2 Jazzy core functionality with Python 3.12
+
+    - [ ] DevOps
+      - [ ] Improve automation of test environments
+      - [ ] Automate linting and formatting (current pre-commit hooks are not working)
+      - [ ] Automate documentation generation
+      - [ ] Add CI/CD pipeline for testing and deployment
+      - [ ] Desired local testing procedure (ideally automated):
+        - [ ] Run linting using `ruff check .` and `ruff format .`
+        - [ ] Clean and build docker images using the ./scripts/docker-manager.sh --clean script
+        - [ ] We can accomplish the above with the `scripts/check.sh` script but ideally these should be consolidated in some other way, it seems hacky.
+        - [ ] Run pytest using `./scripts/test-manager.sh`
+        - [ ] Run live tests with real workspaces in Docker using `./scripts/docker-manager.sh` and `./scripts/test-manager.sh`
+          - [ ] Once the ROS system is running in Docker, we want to evaluate the real output of ros_to_markdown to see the results
+
+    - [ ] Docker Environment Stability
+      - [ ] Fix layer caching issues causing long build times
+      - [ ] Standardize environment variables across distributions
+      - [ ] Add health checks for core ROS services
+      - [ ] Reduce base image sizes (particularly for CI/CD)
+    
+    - [ ] Test Infrastructure
+      - [ ] Add integration tests for ROS2 Jazzy environment
+      - [ ] Create distribution-specific test runners
+      - [ ] Implement proper test isolation for system dependencies
+      - [ ] Add CI matrix for Python version compatibility
+    
+    - [ ] Documentation
+      - [ ] Integrate Jinja2 templates for documentation generation
+      - [ ] Create an extensive set of documentation for the ros_to_markdown project covering:
+        - [ ] Installation and Getting Started
+        - [ ] Development Environment Setup (including Docker)
+        - [ ] How to use the CLI
+        - [ ] How to run tests and generate documentation
+        - [ ] How to contribute to the project
+        - [ ] How to use the project in a Docker container versus running it locally
+        - [ ] How to use the project in a ROS system
+        - [ ] How to use the project in a ROS2 system
+
+    - [X] Script Consolidation:
+      - [X] Migrate run-in-docker.sh to docker-manager.sh
+      - [X] Migrate run-tests.sh to test-manager.sh
+      - [X] Update all documentation references
+      - [ ] Delete deprecated scripts after verification
   </PLANNING>
 
   <ARCHITECTURAL_DECISIONS>
+    - Created GraphFilter utility class to standardize graph cleaning across ROS1/ROS2
+      - Centralized filtering logic for system topics and nodes
+      - Makes it easier to maintain consistent filtering rules
+    
+    - Implemented cycle detection in ROSGraph class
+      - Used DFS algorithm for efficiency
+      - Helps identify potential deadlock scenarios
+    
+    - Separated Mermaid styling from graph structure
+      - Moved styles to analyze_ros_graph.py
+      - Made styles optional via include_styles parameter
+      - Allows for consistent styling across different graph sources
 
+    - Script Consolidation:
+      - Centralized Docker management into docker-manager.sh for:
+        - Better cross-platform X11 handling
+        - Unified interface for all Docker operations
+        - Cleaner error handling and user feedback
+      - Moved test orchestration to test-manager.sh for:
+        - Consistent test execution across ROS versions
+        - Better coverage reporting
+        - Simplified CI/CD integration
   </ARCHITECTURAL_DECISIONS>
 
   <IMPLEMENTATION>
+    - Graph Filtering:
+      - Filter out common system topics (/parameter_events, /rosout)
+      - Filter out analyzer nodes and other system nodes
+      - Standardize node names with leading slashes
+    
+    - Visualization Improvements:
+      - Added sanitize_mermaid_id() for safe node/edge IDs
+      - Improved edge styling based on connection type
+      - Added message type labels option
+    
+    - ROS2-specific:
+      - Fixed node discovery and edge creation
+      - Added basic service handling (needs improvement)
+      - Properly handle namespaced nodes
 
+    - Migration Steps:
+      1. Created new centralized scripts
+      2. Added deprecation notices to old scripts
+      3. Updated all documentation references
+      4. Verified X11 functionality across platforms
   </IMPLEMENTATION>
 
   <HUMAN_AI_NOTES>
+    - Initial ROS2 graph was missing edges and had duplicate nodes
+    - Fixed issues with node filtering and edge creation
+    - Still need to improve service node detection in ROS2
+    - Consider adding support for visualizing ROS2 actions
+    - Graph visualization now shows proper connections between turtlesim nodes
+    - Need to consider adding QoS profile visualization for ROS2 topics
+
+    - Script consolidation revealed need for better documentation of script replacements
+    - X11 configuration is critical and needs careful handling in Docker environments
+    - Documentation must be kept in sync across multiple files
 
   </HUMAN_AI_NOTES>
 </SCRATCHPAD>

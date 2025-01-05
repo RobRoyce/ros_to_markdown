@@ -5,8 +5,11 @@
 This file tracks key decisions and lessons learned in the ros_to_markdown project, focusing on what matters most for future development. It's a quick reference, not exhaustive documentation.
 
 <INSTRUCTIONS>
-  - Use the bottom of this file as a buffer to keep track of your thoughts.
-  - Once the user asks you to update cursornotes, you should consolidate those thoughts into a single cohesive entry.
+  - Keep track of your thoughts in the .cursorscratchpad file
+  - When the user asks you to update cursornotes:
+    - Read the .cursorscratchpad file
+    - Consolidate the thoughts into a single cohesive entry
+    - Add the entry to this file (.cursornotes)
   - Keep entries brief and focused - aim for 3-5 key points per topic
   - Capture only significant architectural decisions or breaking changes
   - Include dates and impacted components
@@ -63,7 +66,7 @@ Why:
 - Single test runner reduces maintenance overhead and ensures consistent behavior
 - Platform-agnostic X11 setup simplifies cross-platform development and testing
 
-# Rolling/Jazzy Docker Support (2025-01-01)
+# Jazzy Docker Support (2025-01-01)
 - Using Python 3.11 from deadsnakes PPA with symlinked ROS2 packages
 - Created hybrid environment that bridges Python 3.11 venv with ROS2's Python 3.12
 - Implemented symlink solution to access ROS2 packages from Python 3.11 venv
@@ -71,7 +74,7 @@ Why:
 
 Why:
 - Ubuntu 24.04's system Python 3.12 enforces strict PEP 668 package management
-- ROS2 Rolling/Jazzy requires Python 3.12 for core functionality
+- ROS2 Jazzy requires Python 3.12 for core functionality
 - Development tools and tests need pip-installable packages (blocked by PEP 668)
 - Solution: Use Python 3.11 venv with symlinks to ROS2's Python 3.12 packages
 
@@ -87,18 +90,18 @@ Known Limitations:
 - Not suitable for production (development/testing only)
 
 Future Plans:
-- Monitor ROS2 Rolling/Jazzy for Python package management solutions
+- Monitor ROS2 Jazzy for Python package management solutions
 - Investigate containerized test isolation approaches
 - Plan migration to full Python 3.12 when package management improves
 
-# Python Version Mismatch in Rolling/Jazzy (2025-01-01)
+# Python Version Mismatch in Jazzy (2025-01-01)
 - Currently running tests in Python 3.11 while ROS uses 3.12
 - This is a temporary solution that needs to be addressed
 - Potential issues with ABI compatibility and ROS package interactions
 
 Why:
 - Ubuntu 24.04 enforces strict system package management
-- ROS Rolling/Jazzy uses system Python 3.12
+- ROS Jazzy uses system Python 3.12
 - Our test infrastructure currently requires more flexible package management
 
 TODO:
@@ -137,3 +140,42 @@ Why:
 - Direct imports caused maintenance issues and unused code
 - Standardized error handling improves debugging in Docker environments
 - Clean code practices essential for long-term maintainability
+
+# Docker Image Management Improvements (2025-01-03)
+- Implemented label-based image tracking system for automated cleanup and management
+- Created selective build system with distribution-specific image handling
+- Fixed PYTHONPATH configuration and environment variable standardization
+
+Why:
+- Previous image management led to disk space issues and confusion
+- Needed automated way to clean up project-specific images without affecting others
+- Environment variable inconsistencies were causing warnings and configuration issues
+
+# ROS Graph Visualization Enhancements (2025-01-03)
+- Implemented cycle detection using DFS algorithm for deadlock identification
+- Created GraphFilter utility to standardize filtering across ROS1/ROS2
+- Separated Mermaid styling from graph structure with optional styling system
+- Added proper handling of namespaced nodes and service connections
+
+Why:
+- Cycle detection helps identify potential message flow issues early
+- Inconsistent filtering between ROS versions made maintenance difficult
+- Coupled styling made graph reuse challenging
+- Previous implementation missed important ROS2-specific connection types
+
+Technical Impact:
+- Improved graph accuracy for both ROS1 and ROS2 systems
+- Better maintainability through centralized filtering logic
+- Enhanced visualization options while maintaining consistency
+- Foundation for future QoS profile visualization in ROS2
+
+# CLI Script Development and Jazzy Compatibility (2025-01-03)
+- Planned the creation of a CLI script to apply `ros_to_markdown` to a ROS workspace, focusing on automatic detection of ROS distribution and parsing of relevant files.
+- Identified critical Python 3.12 compatibility issues with the `analyze_ros_graph.py` script in Jazzy, necessitating a resolution for PEP 668 system package conflicts.
+- Emphasized the need for a reproducible virtual environment setup for Jazzy and documentation of workarounds for system-level Python dependencies.
+- Outlined a comprehensive testing and automation strategy for the development environment, including linting, formatting, and CI/CD pipeline integration.
+
+Why:
+- The CLI script aims to streamline the process of generating markdown documentation from ROS workspaces, enhancing usability.
+- Addressing Python compatibility is crucial for ensuring the functionality of ROS2 Jazzy with the latest Python version.
+- Automation of testing and documentation generation will improve development efficiency and maintainability.

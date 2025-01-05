@@ -7,7 +7,7 @@
 - Repository: https://github.com/RobRoyce/ros_to_markdown
 - License: Apache 2.0
 - Language: Python
-- Dependencies: ROS (Noetic, Humble, Iron, Rolling), Python (3.8, 3.10, 3.11, 3.12)
+- Dependencies: ROS (Noetic, Humble, Iron, Jazzy), Python (3.8, 3.10, 3.11, 3.12)
 - Todays Date: Current date/time MUST be requested from user when needed
 
 ## Project Structure
@@ -24,10 +24,10 @@ ros_to_markdown/
 │ └── test_helpers/ # Test utilities
 ├── docs/ # Documentation
 ├── docker/ # Docker configurations
-│ ├── Dockerfile.ros1 # ROS1 Noetic image
-│ ├── Dockerfile.ros2-humble # ROS2 Humble image
-│ ├── Dockerfile.ros2-iron # ROS2 Iron image
-│ ├── Dockerfile.ros2-jazzy # ROS2 Rolling/Jazzy image
+│ ├── Dockerfile.ros1 # Noetic
+│ ├── Dockerfile.ros2-humble
+│ ├── Dockerfile.ros2-iron
+│ ├── Dockerfile.ros2-jazzy
 │ └── scripts/ # Docker helper scripts
 └── config/ # Configuration files
 ├── pyproject.toml # Python package config
@@ -74,6 +74,13 @@ When you are working on this project, you must keep all of these layers of abstr
     - We will use this file together to track the development of the project over time.
     - This will also serve as the basis for our CHANGELOG as we release new versions of the project.
 - You should optimize for readability, clarity, and conciseness.
+- After suggesting code changes that affect functionality or structure, you must:
+    1. Include a "Verification Steps" section at the end of your message
+    2. Show the exact commands to run the checks:
+       ```bash
+       ./scripts/check.sh
+       ```
+    3. Remind the user to run these checks before implementing the changes
 
 ## Python Development
 - Project Structure:
@@ -98,35 +105,38 @@ When you are working on this project, you must keep all of these layers of abstr
   - Maintain consistent error message format for better debugging
 
 ## ROS Notes
-- We are primarily concerned with ROS1 (Noetic) and ROS2 (Iron, Humble, Rolling).
-- Rolling support is tentative because of various idiosyncrasies.
+- We are primarily concerned with ROS1 (Noetic) and ROS2 (Iron, Humble, Jazzy).
+- Jazzy support is tentative because of various idiosyncrasies.
 - You should always be cognizant of the ROS distribution you are targeting when generating code.
 - I will specify the ROS distribution in the prompt when needed.
 
 ## ROS Distribution Specifications
 - **ROS1 (Noetic Ninjemys)**:
   - EOL May 2025
-  - Ubuntu 20.04 LTS + Python 3.8
+  - Ubuntu: 20.04 LTS
+  - Python: 3.8
   - Core tools: `rospy`, `catkin_tools`
   - Legacy support only - no new feature development
 
 - **ROS2 Iron Irwini** (LTS):
   - EOL Dec 2024
-  - Ubuntu 22.04 LTS + Python 3.10
+  - Ubuntu: 22.04 LTS
+  - Python: 3.10
   - Core tools: `rclpy`, `colcon`, `ament_tools`
   - Legacy support only - no new feature development
 
 - **ROS2 Humble Hawksbill** (LTS):
   - EOL May 2027
-  - Ubuntu 22.04 LTS + Python 3.10
+  - Ubuntu: 22.04 LTS
+  - Python: 3.10
   - Core tools: `rclpy`, `colcon`, `ament_tools`
   - Maintenance mode only
   
-- **ROS2 Rolling/Jazzy Jalisco** (Latest):
+- **ROS2 Jazzy Jalisco** (Latest):
   - EOL May 2029
-  - Ubuntu 24.04 LTS + Python 3.12
+  - Ubuntu: 24.04 LTS
+  - Python: 3.12
   - Core tools: `rclpy`, `colcon`, `ament_tools`
-  - Referred to as "Rolling" henceforth but synonymous with "Jazzy"
 
 ## File Organization
 - Project Structure:
@@ -152,8 +162,8 @@ When you are working on this project, you must keep all of these layers of abstr
 - Platform Support:
     - rules: ["Support Linux, WSL, macOS, Windows", "Handle X11 display configuration per-platform", "Environment Variables: DISPLAY, X11_VOLUME, DOCKER_EXTRA_HOSTS"]
     
-- Rolling/Jazzy Specifics:
-    - rules: ["Use Python 3.11 (temporary)", "Virtual env for packages", "ROS_DISTRO=rolling", "Plan 3.12 migration"]
+- Jazzy Specifics:
+    - rules: ["Use Python 3.12 (temporary workaround using 3.11 due to integration issues)", "Virtual env for packages", "ROS_DISTRO=jazzy", "Plan 3.12 migration"]
 
 ---
 

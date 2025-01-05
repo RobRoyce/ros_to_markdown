@@ -13,6 +13,7 @@ from ..models.ros_components import (
     ROSTopic,
     ROSVersion,
 )
+from ..utils.graph_filters import GraphFilter
 from .base import GraphAnalyzer
 
 # Try importing each ROS2 package separately to identify which one fails
@@ -61,11 +62,11 @@ HAS_ROS2 = all([HAVE_RCLPY, HAVE_NODE, HAVE_ROS2NODE, HAVE_ROS2TOPIC, HAVE_ROS2S
 class ROS2Analyzer(GraphAnalyzer):
     """Analyzer for ROS2 computation graphs."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the analyzer."""
         if not HAS_ROS2:
             raise ImportError("ROS2 packages not available")
-        self.node = None
+        self.node: Optional[Node] = None
 
     def get_nodes(self) -> List[str]:
         """Get all nodes in the ROS2 system."""
@@ -76,6 +77,8 @@ class ROS2Analyzer(GraphAnalyzer):
             print(f"ROS_DOMAIN_ID={os.getenv('ROS_DOMAIN_ID')}")
 
             # First try direct discovery
+            if self.node is None:
+                raise ValueError("Node not initialized")
             node_names_and_ns = self.node.get_node_names_and_namespaces()
             print(f"Direct discovery returned: {node_names_and_ns}")
 
@@ -85,8 +88,8 @@ class ROS2Analyzer(GraphAnalyzer):
                 nodes.add(full_name)
 
             # Then get nodes from topics
-            publishers = {}  # topic -> list of publisher nodes
-            subscribers = {}  # topic -> list of subscriber nodes
+            publishers: Dict = {}  # topic -> list of publisher nodes
+            subscribers: Dict = {}  # topic -> list of subscriber nodes
 
             # Get all topics first
             for topic_name, _ in self.node.get_topic_names_and_types():
@@ -121,7 +124,8 @@ class ROS2Analyzer(GraphAnalyzer):
                 our_name = f"/{our_name}"
             nodes.add(our_name)
 
-            return list(nodes)
+            # Standardize node names
+            return [GraphFilter.standardize_node_name(name) for name in nodes]
         except Exception as e:
             print(f"Error getting nodes: {e}")
             return []
@@ -130,7 +134,7 @@ class ROS2Analyzer(GraphAnalyzer):
         """Get the message type for a ROS2 topic."""
         try:
             topics = dict(get_topic_names_and_types(node=self.node))
-            return topics.get(topic_name, ["unknown"])[0]
+            return topics.get(topic_name, ["unknown"])[0] or "unknown"
         except Exception:
             return "unknown"
 
@@ -160,7 +164,7 @@ class ROS2Analyzer(GraphAnalyzer):
             topics: Dict[str, ROSTopic] = {}
             ros_services: Dict[str, ROSService] = {}
 
-            # Process topics
+            # Process topics and create edges
             for topic_name, type_list in topics_and_types:
                 msg_type = type_list[0] if type_list else "unknown"
 
@@ -168,55 +172,83 @@ class ROS2Analyzer(GraphAnalyzer):
                 pub_info = self.node.get_publishers_info_by_topic(topic_name)
                 sub_info = self.node.get_subscriptions_info_by_topic(topic_name)
 
-                pub_nodes = [info.node_name for info in pub_info]
-                sub_nodes = [info.node_name for info in sub_info]
+                pub_nodes = []
+                for info in pub_info:
+                    if hasattr(info, "node_name") and info.node_name:
+                        node_name = info.node_name
+                        if not node_name.startswith("/"):
+                            node_name = f"/{node_name}"
+                        pub_nodes.append(node_name)
+
+                sub_nodes = []
+                for info in sub_info:
+                    if hasattr(info, "node_name") and info.node_name:
+                        node_name = info.node_name
+                        if not node_name.startswith("/"):
+                            node_name = f"/{node_name}"
+                        sub_nodes.append(node_name)
 
                 # Create topic
-                topics[topic_name] = ROSTopic(
-                    name=topic_name,
-                    type=msg_type,
-                    publishers=pub_nodes,
-                    subscribers=sub_nodes,
-                    description=None,
-                )
+                if pub_nodes or sub_nodes:  # Only add topics with publishers or subscribers
+                    topics[topic_name] = ROSTopic(
+                        name=topic_name,
+                        type=msg_type,
+                        publishers=pub_nodes,
+                        subscribers=sub_nodes,
+                        description=None,
+                    )
 
-                # Create edges for each publisher-subscriber pair
-                for pub_node in pub_nodes:
-                    for sub_node in sub_nodes:
-                        edge = ROSGraphEdge(
-                            source=pub_node,
-                            target=sub_node,
-                            connection_type="topic",
-                            topic_name=topic_name,
-                            message_type=msg_type,
-                        )
-                        edges.add(edge)
+                    # Create edges between publishers and subscribers
+                    for pub_node in pub_nodes:
+                        for sub_node in sub_nodes:
+                            # Skip edges involving the analyzer node
+                            if (
+                                "graph_analyzer" not in pub_node
+                                and "graph_analyzer" not in sub_node
+                            ):
+                                edge = ROSGraphEdge(
+                                    source=pub_node,
+                                    target=sub_node,
+                                    connection_type="topic",
+                                    topic_name=topic_name,
+                                    message_type=msg_type,
+                                )
+                                edges.add(edge)
 
             # Process services
             for service_name, type_list in services_and_types:
                 srv_type = type_list[0] if type_list else "unknown"
+                # Only add non-system services
+                if not any(
+                    service_name.startswith(prefix) for prefix in ["/parameter_events", "/rosout"]
+                ):
+                    ros_services[service_name] = ROSService(
+                        name=service_name,
+                        type=srv_type,
+                        node=None,  # We'll improve service node detection later
+                        description=None,
+                    )
 
-                # Try to find the node providing this service
-                provider_node = None
-                for node_name in nodes:
-                    if service_name.startswith(node_name):
-                        provider_node = node_name
-                        break
+            # Filter out system topics
+            filtered_topics = {
+                name: topic
+                for name, topic in topics.items()
+                if not any(name.startswith(prefix) for prefix in ["/parameter_events", "/rosout"])
+            }
 
-                ros_services[service_name] = ROSService(
-                    name=service_name, type=srv_type, node=provider_node, description=None
-                )
-
-            return ROSGraph(
+            # Create graph
+            graph = ROSGraph(
                 nodes=nodes,
                 edges=edges,
-                topics=topics,
+                topics=filtered_topics,
                 services=ros_services,
                 actions={},
                 parameters={},
                 version=ROSVersion.ROS2,
                 distro=os.getenv("ROS_DISTRO", "unknown"),
             )
+
+            return GraphFilter.clean_graph(graph)
 
         finally:
             if self.node:

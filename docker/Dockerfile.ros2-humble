@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     python3-wheel \
     python3-empy \
     python3-lark \
+    python3-venv \
     python3-colcon-common-extensions \
     ros-humble-turtlesim \
     ros-humble-joy \
@@ -21,7 +22,13 @@ RUN apt-get update && apt-get install -y \
     git \
     sudo \
     ros-humble-rmw-cyclonedds-cpp \
+    x11-apps \
+    mesa-utils \
     && rm -rf /var/lib/apt/lists/*
+
+# Ensure X11 socket permissions
+RUN mkdir -p /tmp/.X11-unix && \
+    chmod 1777 /tmp/.X11-unix
 
 # Create a non-root user
 ARG USERNAME=ros
@@ -42,7 +49,9 @@ RUN rosdep fix-permissions && \
 RUN mkdir -p /opt/ros/ws/src && \
     chown -R $USERNAME:$USERNAME /opt/ros/ws && \
     mkdir -p /home/$USERNAME/ws/src && \
-    chown -R $USERNAME:$USERNAME /home/$USERNAME/ws
+    chown -R $USERNAME:$USERNAME /home/$USERNAME/ws && \
+    mkdir -p /sample_ws && \
+    chown -R $USERNAME:$USERNAME /sample_ws
 
 # Copy package files
 COPY --chown=$USERNAME:$USERNAME pyproject.toml README.md ./
@@ -52,30 +61,35 @@ RUN mkdir -p src/ros_to_markdown
 COPY --chown=$USERNAME:$USERNAME src/ros_to_markdown src/ros_to_markdown/
 COPY --chown=$USERNAME:$USERNAME tests tests/
 
-# Install the package directly (no venv)
-RUN /bin/bash -c "source /opt/ros/humble/setup.bash && \
-    pip3 install --no-cache-dir -e '.[ros2,dev]'"
-
-# Copy and setup launch script
-COPY docker/scripts/launch-ros2-test-env.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/launch-ros2-test-env.sh
-
-ENV PYTHONPATH=/workspace/src:$PYTHONPATH
+# Copy and setup scripts (before USER switch)
+COPY docker/entrypoints/ros2-entrypoint.sh /ros2-entrypoint.sh
+COPY scripts/utils/launch-ros2-test-env.sh /usr/local/bin/launch-ros2-test-env.sh
+RUN chmod 755 /ros2-entrypoint.sh && \
+    chmod +x /usr/local/bin/launch-ros2-test-env.sh && \
+    chown $USERNAME:$USERNAME /ros2-entrypoint.sh && \
+    chown $USERNAME:$USERNAME /usr/local/bin/launch-ros2-test-env.sh
 
 # Set up coverage directories
 RUN mkdir -p /home/$USERNAME/.pytest_cache && \
     chown -R $USERNAME:$USERNAME /home/$USERNAME/.pytest_cache
 
-# Source ROS2 environment in .bashrc
-RUN echo "source /opt/ros/humble/setup.bash" >> /home/$USERNAME/.bashrc
-
-# Set up shell environment for ROS
+# Set up shell environment for ROS (before USER switch)
 RUN echo 'source "/opt/ros/${ROS_DISTRO}/setup.bash"' >> /etc/bash.bashrc && \
     echo 'if [ -f "/sample_ws/install/setup.bash" ]; then source "/sample_ws/install/setup.bash"; fi' >> /etc/bash.bashrc
 
-# Copy and setup entrypoint script
-COPY docker/scripts/ros2-entrypoint.sh /ros2-entrypoint.sh
-RUN chmod +x /ros2-entrypoint.sh
+USER $USERNAME
+
+# Install the package directly (no venv)
+RUN /bin/bash -c "source /opt/ros/humble/setup.bash && \
+    pip3 install --upgrade pip && \
+    pip3 install pytest pytest-cov pytest-asyncio pytest-mock && \
+    pip3 install --no-cache-dir -e '.[ros2,dev]'"
+
+# Update bashrc to source ROS
+RUN echo 'source "/opt/ros/humble/setup.bash"' >> /home/$USERNAME/.bashrc
+
+# Set environment variables
+ENV PYTHONPATH=/workspace/src:/opt/ros/humble/lib/python3.10/site-packages:$PYTHONPATH
 
 ENTRYPOINT ["/ros2-entrypoint.sh"]
 CMD ["/bin/bash"] 

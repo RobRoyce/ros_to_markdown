@@ -32,14 +32,15 @@ select = [
     "RUF", # Ruff-specific rules
     "W",   # pycodestyle warnings
     "D",   # pydocstyle
+    "ANN", # flake8-annotations
 ]
 
 # Ignore certain rules
-ignore = [
-    "D203",  # one-blank-line-before-class (conflicts with D211)
-    "D212",  # multi-line-summary-first-line (conflicts with D213)
-    "D107",  # missing docstring in __init__
-]
+# ignore = [
+#     "D203",  # one-blank-line-before-class (conflicts with D211)
+#     "D212",  # multi-line-summary-first-line (conflicts with D213)
+#     "D107",  # missing docstring in __init__
+# ]
 
 # Per-file ignores
 [lint.per-file-ignores]
@@ -60,4 +61,4 @@ combine-as-imports = true
 force-sort-within-sections = true
 known-first-party = ["ros_to_markdown"]
 known-third-party = ["rospy", "rclpy"]
-section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"] 
+section-order = ["future", "standard-library", "first-party", "third-party", "local-folder"] 

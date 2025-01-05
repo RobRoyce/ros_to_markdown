@@ -76,18 +76,28 @@ fi
 # Source the workspace
 source $SAMPLE_WS/devel/setup.bash
 
-# Print available demo commands
-echo "
-ROS1 Demo Commands Available:
-----------------------------
-roslaunch ros1_demos demo.launch    # Launch turtlesim with circle motion
-rosrun turtlesim turtlesim_node    # Run turtlesim alone
-rosrun ros1_demos turtle_circle.py  # Run circle motion node
-"
+# Print available demo commands with better formatting
+echo -e "\e[1;34m
+╔════════════════════════════════════════╗
+║          ROS1 Demo Commands            ║
+╚════════════════════════════════════════╝\e[0m"
 
-# Execute the command passed to the script, or start an interactive shell
-if [ $# -eq 0 ]; then
-    exec /bin/bash
+echo -e "\e[1;36mAvailable commands:\e[0m"
+echo -e "  \e[1;33mroslaunch ros1_demos demo.launch\e[0m    # Launch full demo (turtlesim + circle motion)"
+echo -e "  \e[1;33mrosrun turtlesim turtlesim_node\e[0m    # Run turtlesim alone"
+echo -e "  \e[1;33mrosrun ros1_demos turtle_circle.py\e[0m  # Run circle motion node"
+
+# Check if AUTO_LAUNCH_DEMO environment variable is set
+if [ "${AUTO_LAUNCH_DEMO}" = "true" ]; then
+    echo -e "\e[1;32m\nAuto-launching demo...\e[0m"
+    exec roslaunch ros1_demos demo.launch
 else
-    exec "$@"
+    echo -e "\e[1;33m\nTip: Set AUTO_LAUNCH_DEMO=true to automatically start the demo\e[0m"
+    
+    # Execute the command passed to the script, or start an interactive shell
+    if [ $# -eq 0 ]; then
+        exec /bin/bash
+    else
+        exec "$@"
+    fi
 fi 

@@ -3,20 +3,21 @@
 import os
 import subprocess
 import time
+from typing import Callable
+
+from ros_to_markdown.core.ros_detector import ROSDetector
+from ros_to_markdown.models.ros_components import ROSDistro, ROSVersion
 
 import pytest
 
-from ros_to_markdown.core.ros_detector import ROSDetector
-from ros_to_markdown.models.ros_components import ROSVersion
-
-from ..test_helpers.docker_utils import get_ros_workspace, is_running_in_docker
-from ..test_helpers.ros_test_env import launch_turtlesim, verify_turtlesim_running
+from ..helpers.docker_utils import get_ros_workspace, is_running_in_docker
+from ..helpers.ros_test_env import launch_turtlesim, verify_turtlesim_running
 
 # Mark all tests in this module as integration tests
 pytestmark = pytest.mark.integration
 
 
-def requires_docker(func):
+def requires_docker(func: Callable) -> pytest.MarkDecorator:
     """Decorator to skip tests if not running in Docker."""
     return pytest.mark.skipif(
         not is_running_in_docker(), reason="Test requires Docker environment"
@@ -24,7 +25,7 @@ def requires_docker(func):
 
 
 @pytest.fixture(scope="session")
-def ensure_workspace():
+def ensure_workspace() -> str:
     """Fixture to ensure a ROS workspace exists for testing."""
     workspace_path = os.path.expanduser("~/ws")
 
@@ -79,7 +80,7 @@ def ensure_workspace():
 
 
 @requires_docker
-def test_workspace_exists(ensure_workspace):
+def test_workspace_exists(ensure_workspace: str) -> None:
     """Verify that we can find the ROS workspace in Docker."""
     workspace = get_ros_workspace()
     assert workspace is not None
@@ -88,7 +89,7 @@ def test_workspace_exists(ensure_workspace):
 
 
 @requires_docker
-def test_workspace_has_expected_structure(ensure_workspace):
+def test_workspace_has_expected_structure(ensure_workspace: str) -> None:
     """Verify the workspace has the expected ROS structure."""
     workspace = get_ros_workspace()
     assert workspace is not None
@@ -131,7 +132,7 @@ def verify_package_exists(pkg_path: str) -> bool:
 
 
 @requires_docker
-def test_workspace_contains_packages():
+def test_workspace_contains_packages() -> None:
     """Verify that the workspace contains ROS packages."""
     workspace = get_ros_workspace()
     assert workspace is not None
@@ -143,7 +144,7 @@ def test_workspace_contains_packages():
 
 
 @requires_docker
-def test_turtlesim_package_available(ensure_workspace):
+def test_turtlesim_package_available(ensure_workspace: str) -> None:
     """Verify that turtlesim package is available in the workspace."""
     ros_version = ROSDetector.detect_ros_version()
 
@@ -194,10 +195,13 @@ def test_turtlesim_package_available(ensure_workspace):
         ("noetic", ROSVersion.ROS1),
         ("humble", ROSVersion.ROS2),
         ("iron", ROSVersion.ROS2),
+        ("jazzy", ROSVersion.ROS2),
         ("rolling", ROSVersion.ROS2),
     ],
 )
-def test_workspace_matches_ros_version(ensure_workspace, ros_distro, expected_version):
+def test_workspace_matches_ros_version(
+    ensure_workspace: str, ros_distro: str, expected_version: ROSVersion
+) -> None:
     """Verify that the workspace matches the expected ROS version."""
     if os.environ.get("ROS_DISTRO") != ros_distro:
         pytest.skip(f"Test requires {ros_distro} environment")
@@ -226,11 +230,13 @@ def test_workspace_matches_ros_version(ensure_workspace, ros_distro, expected_ve
 
 
 @requires_docker
-def test_ros_detector_live_environment(ensure_workspace):
+def test_ros_detector_live_environment(ensure_workspace: str) -> None:
     """Test ROSDetector functionality in a live ROS environment."""
     # Get the expected ROS version based on distro
-    distro = os.environ.get("ROS_DISTRO", "humble")
-    expected_version = ROSVersion.ROS1 if distro == "noetic" else ROSVersion.ROS2
+    distro = ROSDetector.detect_ros_distro()
+    expected_version = (
+        ROSVersion.ROS1 if distro in [ROSDistro.NOETIC, ROSDistro.MELODIC] else ROSVersion.ROS2
+    )
 
     # Test direct version detection
     detected_version = ROSDetector.detect_ros_version()
@@ -245,14 +251,14 @@ def test_ros_detector_live_environment(ensure_workspace):
     ), f"Fallback detection expected {expected_version}, got {fallback_version}"
 
     # Test distro detection
-    detected_distro = ROSDetector.get_ros_distro()
+    detected_distro = ROSDetector.detect_ros_distro()
     assert detected_distro == distro, f"Expected distro {distro}, got {detected_distro}"
 
     # Verify ROS tools are available
     if expected_version == ROSVersion.ROS1:
         # Test rosversion command
         result = subprocess.run(["rosversion", "-d"], capture_output=True, text=True, check=True)
-        assert result.stdout.strip() == distro
+        assert result.stdout.strip() == distro.value
     else:
         # Test ros2 command
         result = subprocess.run(["ros2", "--help"], capture_output=True, text=True, check=True)
@@ -260,7 +266,7 @@ def test_ros_detector_live_environment(ensure_workspace):
 
 
 @requires_docker
-def test_ros_detector_environment_variables():
+def test_ros_detector_environment_variables() -> None:
     """Test ROSDetector's handling of environment variables."""
     distro = os.environ.get("ROS_DISTRO")
     assert distro is not None, "ROS_DISTRO environment variable not set"
@@ -278,7 +284,7 @@ def test_ros_detector_environment_variables():
 
 
 @requires_docker
-def test_ros_detector_with_package_imports(ensure_workspace):
+def test_ros_detector_with_package_imports(ensure_workspace: str) -> None:
     """Test ROSDetector's ability to detect ROS through package imports."""
     distro = os.environ.get("ROS_DISTRO", "humble")
 
@@ -308,7 +314,7 @@ def test_ros_detector_with_package_imports(ensure_workspace):
 
 
 @requires_docker
-def test_ros_detector_workspace_tools(ensure_workspace):
+def test_ros_detector_workspace_tools(ensure_workspace: str) -> None:
     """Test ROSDetector's tools on the actual workspace structure."""
     workspace = get_ros_workspace()
     ros_version = ROSDetector.detect_ros_version()
@@ -332,7 +338,7 @@ def test_ros_detector_workspace_tools(ensure_workspace):
 
 
 @requires_docker
-def test_ros_detector_package_inspection(ensure_workspace):
+def test_ros_detector_package_inspection(ensure_workspace: str) -> None:
     """Test ROSDetector's ability to inspect packages in the workspace."""
     workspace = get_ros_workspace()
     ros_version = ROSDetector.detect_ros_version()
@@ -354,7 +360,7 @@ def test_ros_detector_package_inspection(ensure_workspace):
 
 
 @requires_docker
-def test_ros_detector_with_running_nodes():
+def test_ros_detector_with_running_nodes() -> None:
     """Test ROSDetector with running ROS nodes."""
     core_process = None
     turtlesim_process = None
@@ -380,48 +386,29 @@ def test_ros_detector_with_running_nodes():
 
 
 @requires_docker
-def test_ros_detector_python_path():
+def test_ros_detector_python_path() -> None:
     """Test ROSDetector's handling of Python paths in the ROS environment."""
     ros_version = ROSDetector.detect_ros_version()
+    ros_distro = ROSDetector.detect_ros_distro()
     python_path = os.environ.get("PYTHONPATH", "")
 
     if ros_version == ROSVersion.ROS1:
         # Check for ROS1-specific Python paths
         assert (
-            "/opt/ros/noetic/lib/python3/dist-packages" in python_path
+            f"/opt/ros/{ros_distro.value}/lib/python3/dist-packages" in python_path
         ), "ROS1 Python path not properly set"
+        return
+
+    # Special handling for Jazzy due to Python version differences
+    if ros_distro in [ROSDistro.JAZZY, ROSDistro.ROLLING]:
+        ros_python_version = "3.12"
     else:
-        # Check for ROS2-specific Python paths
-        distro = ROSDetector.get_ros_distro()
+        ros_python_version = "3.10"
 
-        # Special handling for Rolling/Jazzy due to Python version differences
-        if distro in ["rolling", "jazzy"]:
-            # ROS uses system Python (3.12), but our tests run in Python 3.11 venv
-            ros_python_version = "3.12"  # ROS system Python version
-            venv_python_version = "3.11"  # Our venv Python version
-
-            # Check that either version's path exists (system or venv)
-            system_path = f"/opt/ros/{distro}/lib/python{ros_python_version}/site-packages"
-            venv_path = f"/opt/ros/{distro}/lib/python{venv_python_version}/site-packages"
-
-            assert any(p in python_path for p in [system_path, venv_path]), (
-                f"ROS2 Python path for {distro} not properly set. "
-                f"Expected either {system_path} or {venv_path} in {python_path}"
-            )
-        else:
-            # For other distros, use the standard Python version detection
-            try:
-                for path_entry in python_path.split(":"):
-                    if f"/opt/ros/{distro}/lib/python" in path_entry:
-                        ros_python_version = path_entry.split("python")[1].split("/")[0]
-                        break
-                else:
-                    ros_python_version = "3.10"  # Default for Humble/Iron
-            except Exception:
-                ros_python_version = "3.10"  # Fallback
-
-            expected_path = f"/opt/ros/{distro}/lib/python{ros_python_version}/site-packages"
-            assert expected_path in python_path, (
-                f"ROS2 Python path for {distro} not properly set. "
-                f"Expected {expected_path} in {python_path}"
-            )
+    expected_path = os.path.join(
+        "/opt/ros", ros_distro.value, "lib", f"python{ros_python_version}", "site-packages"
+    )
+    assert expected_path in python_path, (
+        f"ROS2 Python path for {ros_distro.value} not properly set. "
+        f"Expected {expected_path} in {python_path}"
+    )

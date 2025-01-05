@@ -14,17 +14,17 @@ class DockerTestRunner:
         "ros1": "noetic",
         "ros2-humble": "humble",
         "ros2-iron": "iron",
-        "ros2-jazzy": "rolling",  # Using rolling until jazzy is released
+        "ros2-jazzy": "jazzy",
     }
 
-    def __init__(self, test_path: Optional[str] = None):
+    def __init__(self, test_path: Optional[str] = None) -> None:
         """Initialize the test runner.
 
         Args:
             test_path: Optional path to specific test file or directory
         """
         self.test_path = test_path or "tests/"
-        self.docker_script = "./docker/scripts/run-in-docker.sh"
+        self.docker_script = "./scripts/docker-manager.sh"
 
     def run_tests(self) -> bool:
         """Run tests in all environments."""
@@ -63,12 +63,21 @@ class DockerTestRunner:
 
         return all_passed
 
-    def combine_coverage(self):
+    def combine_coverage(self) -> None:
         """Combine coverage data from multiple test runs."""
         try:
-            # Install coverage if needed
+            # Install coverage if needed (directly, without sudo)
             subprocess.run(
-                [self.docker_script, "ros1", "python3", "-m", "pip", "install", "coverage"],
+                [
+                    self.docker_script,
+                    "ros1",
+                    "python3",
+                    "-m",
+                    "pip",
+                    "install",
+                    "--user",
+                    "coverage",
+                ],
                 check=True,
             )
 
@@ -85,7 +94,7 @@ class DockerTestRunner:
             print(f"Warning: Failed to combine coverage data: {e}")
 
 
-def setup_coverage():
+def setup_coverage() -> None:
     """Ensure coverage directory exists and is writable."""
     coverage_dir = Path("/workspace")
     coverage_dir.mkdir(parents=True, exist_ok=True)

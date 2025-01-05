@@ -2,21 +2,23 @@ from contextlib import contextmanager
 import os
 import subprocess
 import time
-from typing import List
+from typing import Generator, List, Tuple
 
 from ros_to_markdown.core.ros_detector import ROSDetector
-from ros_to_markdown.models.ros_components import ROSVersion
+from ros_to_markdown.models.ros_components import ROSDistro, ROSVersion
+
+"""Helper functions for ROS test environment setup."""
 
 
 class ROSTestEnvironment:
     """Helper class to manage ROS test environments."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the ROS test environment."""
         self.ros_version, self.ros_distro = ROSDetector.detect_ros_version()
         self.processes: List[subprocess.Popen] = []
 
-    def setup(self):
+    def setup(self) -> None:
         """Set up the ROS test environment."""
         if self.ros_version == ROSVersion.ROS1:
             self._setup_ros1()
@@ -25,14 +27,14 @@ class ROSTestEnvironment:
         else:
             raise RuntimeError("Unknown ROS version")
 
-    def teardown(self):
+    def teardown(self) -> None:
         """Clean up the ROS test environment."""
         for process in self.processes:
             process.terminate()
             process.wait()
         self.processes.clear()
 
-    def _setup_ros1(self):
+    def _setup_ros1(self) -> None:
         """Set up ROS1 test environment with basic nodes."""
         # Start roscore if not running
         if not ROSDetector.is_ros_initialized():
@@ -56,7 +58,7 @@ class ROSTestEnvironment:
         )
         self.processes.append(teleop)
 
-    def _setup_ros2(self):
+    def _setup_ros2(self) -> None:
         """Set up ROS2 test environment with basic nodes."""
         # Start turtlesim node
         turtlesim = subprocess.Popen(
@@ -75,7 +77,7 @@ class ROSTestEnvironment:
         self.processes.append(teleop)
 
     @contextmanager
-    def running_env(self):
+    def running_env(self) -> Generator:
         """Context manager for running a temporary ROS environment.
 
         Usage:
@@ -89,62 +91,85 @@ class ROSTestEnvironment:
             self.teardown()
 
 
-"""Helper functions for ROS test environment setup."""
-
-
-def launch_turtlesim():
-    """Launch turtlesim node for either ROS1 or ROS2.
-
-    Returns:
-        tuple: (core_process, turtlesim_process) - Processes that need to be terminated
-    """
+def launch_turtlesim() -> Tuple[subprocess.Popen, subprocess.Popen]:
+    """Launch turtlesim node for either ROS1 or ROS2."""
     ros_version = ROSDetector.detect_ros_version()
+    env = dict(os.environ)
+    env["DISPLAY"] = os.environ.get("DISPLAY", ":0")
+    env["PYTHONPATH"] = "/workspace/src:" + env.get("PYTHONPATH", "")
 
     if ros_version == ROSVersion.ROS1:
         # Start roscore first
-        core_process = subprocess.Popen(["roscore"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        roscore_cmd = "source /opt/ros/noetic/setup.bash && roscore"
+        core_process = subprocess.Popen(
+            roscore_cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True,
+            executable="/bin/bash",
+            env=env,
+        )
 
         # Give roscore time to start
         time.sleep(2)
 
         # Launch turtlesim
+        turtlesim_cmd = "source /opt/ros/noetic/setup.bash && rosrun turtlesim turtlesim_node"
         turtlesim_process = subprocess.Popen(
-            ["rosrun", "turtlesim", "turtlesim_node"],
+            turtlesim_cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            env=dict(os.environ, DISPLAY=os.environ.get("DISPLAY", ":0")),
+            shell=True,
+            executable="/bin/bash",
+            env=env,
         )
 
         return core_process, turtlesim_process
 
     else:  # ROS2
         # No need for core process in ROS2
+        turtlesim_cmd = "ros2 run turtlesim turtlesim_node"
         turtlesim_process = subprocess.Popen(
-            ["ros2", "run", "turtlesim", "turtlesim_node"],
+            turtlesim_cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            env=dict(os.environ, DISPLAY=os.environ.get("DISPLAY", ":0")),
+            shell=True,
+            executable="/bin/bash",
+            env=env,
         )
 
         return None, turtlesim_process
 
 
-def verify_turtlesim_running():
-    """Verify that turtlesim node is running.
-
-    Returns:
-        bool: True if turtlesim node is running
-    """
+def verify_turtlesim_running() -> bool:
+    """Verify that turtlesim node is running."""
     ros_version = ROSDetector.detect_ros_version()
+    ros_distro = ROSDetector.detect_ros_distro()
+
+    if ros_version is None or ros_version == ROSVersion.UNKNOWN:
+        return False
+
+    if ros_distro is None or ros_distro == ROSDistro.UNKNOWN:
+        return False
 
     try:
         if ros_version == ROSVersion.ROS1:
-            result = subprocess.run(["rosnode", "list"], capture_output=True, text=True, check=True)
-            return "/turtlesim" in result.stdout
+            cmd = f"source /opt/ros/{ros_distro.value}/setup.bash && rosnode list"
+        elif ros_version == ROSVersion.ROS2:
+            cmd = f"source /opt/ros/{ros_distro.value}/setup.bash && ros2 node list"
         else:
-            result = subprocess.run(
-                ["ros2", "node", "list"], capture_output=True, text=True, check=True
-            )
-            return "/turtlesim" in result.stdout
-    except subprocess.CalledProcessError:
+            raise RuntimeError("Unknown ROS distribution")
+
+        print(f"Executing command: {cmd}")  # Debug output
+        result = subprocess.run(
+            cmd, capture_output=True, text=True, check=True, shell=True, executable="/bin/bash"
+        )
+        print(f"Command output: {result.stdout}")  # Debug output
+        print(f"Command error: {result.stderr}")  # Debug output
+
+        return "/turtlesim" in result.stdout
+    except subprocess.CalledProcessError as e:
+        print(f"Error verifying turtlesim: {e}")
+        print(f"Command output: {e.output}")
+        print(f"Command stderr: {e.stderr}")
         return False

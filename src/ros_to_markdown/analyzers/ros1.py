@@ -13,6 +13,7 @@ from ..models.ros_components import (
     ROSTopic,
     ROSVersion,
 )
+from ..utils.graph_filters import GraphFilter
 from .base import GraphAnalyzer
 
 
@@ -112,13 +113,15 @@ class ROS1Analyzer(GraphAnalyzer):
             print("No nodes found in the ROS graph")
             return None
 
-        return ROSGraph(
+        graph = ROSGraph(
             nodes=nodes,
             edges=edges,
             topics=topics,
             services=ros_services,
-            actions={},  # ROS1 doesn't have actions in the same way
+            actions={},
             parameters={},
             version=ROSVersion.ROS1,
             distro="noetic",
         )
+
+        return GraphFilter.clean_graph(graph)

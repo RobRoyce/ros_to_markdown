@@ -52,3 +52,15 @@ markers = [
 ]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+exclude = 'tests'
+ignore_missing_imports = true
+
+# mypy per-module options:
+[[tool.mypy.overrides]]
+module = ".*"
+disallow_untyped_defs = true

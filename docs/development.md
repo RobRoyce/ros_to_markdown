@@ -53,12 +53,24 @@ cd ros_to_markdown
 
 2. Build Docker images:
 ```bash
+# Build all images
 docker compose build
+
+# Build specific services
+./scripts/docker-manager.sh build ros2-humble ros2-humble-dev
+
+# Clean and rebuild
+./scripts/docker-manager.sh build --clean
+```
+
+To clean up project-specific images and containers:
+```bash
+./scripts/docker-manager.sh clean
 ```
 
 3. Run tests:
 ```bash
-./scripts/run-tests.sh
+./scripts/test-manager.sh test
 ```
 
 ### Development Containers
@@ -78,10 +90,25 @@ These containers include:
 Example usage:
 ```bash
 # Start a development shell
-./docker/scripts/run-in-docker.sh ros2-humble-dev bash
+./scripts/docker-manager.sh run ros2-humble-dev bash
 
 # Run tests in development container
-./docker/scripts/run-in-docker.sh ros2-humble-dev pytest tests/
+./scripts/docker-manager.sh run ros2-humble-dev pytest tests/
+```
+
+#### Recommended Aliases
+
+Add these to your shell configuration:
+```bash
+# Docker management
+alias rtm-docker='./scripts/docker-manager.sh'
+alias rtm-test='./scripts/test-manager.sh'
+
+# Development environments
+alias rtm-ros1='./scripts/docker-manager.sh run ros1-dev'
+alias rtm-humble='./scripts/docker-manager.sh run ros2-humble-dev'
+alias rtm-iron='./scripts/docker-manager.sh run ros2-iron-dev'
+alias rtm-jazzy='./scripts/docker-manager.sh run ros2-jazzy-dev'
 ```
 
 ## Testing
@@ -92,20 +119,26 @@ Example usage:
 tests/
 ├── core/              # Core functionality tests
 ├── integration/       # Tests requiring ROS runtime
-└── test_helpers/     # Test utilities and fixtures
+└── helpers/     # Test utilities and fixtures
 ```
 
 ### Running Tests
 
 ```bash
 # Run all tests
-./scripts/run-tests.sh
+./scripts/test-manager.sh test
 
 # Run specific test file
-./scripts/run-tests.sh tests/core/test_ros_detector.py
+./scripts/test-manager.sh test tests/core/test_ros_detector.py
 
 # Run tests for specific ROS distribution
-./scripts/run-tests.sh -d humble
+./scripts/test-manager.sh test -d humble
+
+# Run integration tests
+./scripts/test-manager.sh integration
+
+# Generate coverage report
+./scripts/test-manager.sh coverage
 ```
 
 ### Test Categories
@@ -186,7 +219,7 @@ export RCUTILS_COLORIZED_OUTPUT=1
 
 1. Interactive Shell:
 ```bash
-./docker/scripts/run-in-docker.sh ros2-humble-dev bash
+./scripts/docker-manager.sh run ros2-humble-dev bash
 ```
 
 2. Check Environment:
@@ -215,3 +248,88 @@ ros2 topic list
 5. Submit a pull request
 
 See CONTRIBUTING.md for detailed guidelines. 
+
+## Development Tools
+
+### Quick Start Commands
+```bash
+# Docker management
+./scripts/docker-manager.sh build ros2-humble  # Build specific image
+./scripts/docker-manager.sh clean             # Clean Docker resources
+./scripts/docker-manager.sh prune             # Deep clean all resources
+
+# Testing
+./scripts/test-manager.sh check              # Run all pre-commit checks
+./scripts/test-manager.sh test               # Run tests only
+./scripts/test-manager.sh coverage           # Generate coverage report
+./scripts/test-manager.sh integration        # Run integration tests
+
+# Documentation
+./scripts/generate-docs.py                   # Generate all docs
+```
+
+### Shell Aliases
+```bash
+# Docker management
+alias rtm-docker='./scripts/docker-manager.sh'
+alias rtm-test='./scripts/test-manager.sh'
+
+# Development environments
+alias rtm-ros1='./scripts/docker-manager.sh run ros1-dev'
+alias rtm-humble='./scripts/docker-manager.sh run ros2-humble-dev'
+alias rtm-iron='./scripts/docker-manager.sh run ros2-iron-dev'
+alias rtm-jazzy='./scripts/docker-manager.sh run ros2-jazzy-dev'
+```
+
+### Project Scripts
+
+The project uses several scripts for development and testing:
+
+```
+scripts/
+├── check.sh              # Pre-commit checks (ruff + pytest)
+├── docker-manager.sh     # Docker environment management
+├── test-manager.sh       # Test orchestration
+└── utils/               # Utility scripts
+    ├── analyze_ros_graph.py
+    ├── launch_turtlesim.py
+    ├── launch-ros1-test-env.sh
+    └── launch-ros2-test-env.sh
+```
+
+#### Common Commands
+```bash
+# Run pre-commit checks
+./scripts/check.sh
+
+# Build Docker images
+./scripts/docker-manager.sh build --clean
+
+# Run tests
+./scripts/test-manager.sh test
+
+# Run integration tests
+./scripts/test-manager.sh integration
+
+# Start a development shell
+./scripts/docker-manager.sh run ros2-humble-dev bash
+```
+
+### Testing
+
+```bash
+# Run all tests
+./scripts/test-manager.sh test
+
+# Run specific test file
+./scripts/test-manager.sh test tests/core/test_ros_detector.py
+
+# Run tests for specific ROS distribution
+./scripts/test-manager.sh test -d humble
+
+# Run integration tests
+./scripts/test-manager.sh integration
+
+# Generate coverage report
+./scripts/test-manager.sh coverage
+``` 
