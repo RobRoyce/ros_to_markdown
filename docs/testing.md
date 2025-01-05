@@ -60,7 +60,7 @@ This document describes the testing infrastructure and procedures for the ros_to
 + │   ├── test_ros_detector.py    # ROS detection tests (used by sanity check)
 + │   └── test_ros_components.py  # Component model tests
 + ├── integration/       # Tests requiring ROS runtime
-+ └── test_helpers/     # Test utilities and fixtures
++ └── helpers/     # Test utilities and fixtures
 + ```
 + 
 + ## Development Workflow

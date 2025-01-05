@@ -111,16 +111,6 @@ alias rtm-iron='./scripts/docker-manager.sh run ros2-iron-dev'
 alias rtm-jazzy='./scripts/docker-manager.sh run ros2-jazzy-dev'
 ```
 
-#### ROS2 Jazzy Python Environment
-
-ROS2 Jazzy uses Python 3.12 for system packages but we use Python 3.11 in a virtual environment for compatibility. The PYTHONPATH is configured to handle both:
-
-1. Workspace code (`/workspace/src`)
-2. Python 3.11 venv packages (`/home/ros/.venv/lib/python3.11/site-packages`)
-3. ROS2 Python 3.12 packages (`/opt/ros/jazzy/lib/python3.12/site-packages`)
-
-Development containers (`ros2-jazzy-dev`) automatically activate the virtual environment.
-
 ## Testing
 
 ### Test Structure
@@ -129,7 +119,7 @@ Development containers (`ros2-jazzy-dev`) automatically activate the virtual env
 tests/
 ├── core/              # Core functionality tests
 ├── integration/       # Tests requiring ROS runtime
-└── test_helpers/     # Test utilities and fixtures
+└── helpers/     # Test utilities and fixtures
 ```
 
 ### Running Tests

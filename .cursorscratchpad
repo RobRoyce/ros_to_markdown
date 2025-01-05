@@ -80,9 +80,9 @@
       - [ ] Add CI/CD pipeline for testing and deployment
       - [ ] Desired local testing procedure (ideally automated):
         - [ ] Run linting using `ruff check .` and `ruff format .`
-        - [ ] Clean and build docker images using the ./docker/scripts/build.sh --clean script
+        - [ ] Clean and build docker images using the ./scripts/docker-manager.sh --clean script
         - [ ] We can accomplish the above with the `scripts/check.sh` script but ideally these should be consolidated in some other way, it seems hacky.
-        - [ ] Run pytest using `./scripts/run-tests.sh`
+        - [ ] Run pytest using `./scripts/test-manager.sh`
         - [ ] Run live tests with real workspaces in Docker using `./scripts/docker-manager.sh` and `./scripts/test-manager.sh`
           - [ ] Once the ROS system is running in Docker, we want to evaluate the real output of ros_to_markdown to see the results
 
@@ -176,26 +176,6 @@
     - Script consolidation revealed need for better documentation of script replacements
     - X11 configuration is critical and needs careful handling in Docker environments
     - Documentation must be kept in sync across multiple files
-
-    Temporary Notes:
-    CURRENTLY:
-    The analyze_ros_graph.py script is not working in Jazzy due to Python 3.12 compatibility issues. We need to figure out how to get rid of 3.11 and use 3.12 exclusively.
-
-    ```
-    (.venv) ros@docker-desktop:/workspace$ deactivate
-    ros@docker-desktop:/workspace$ ./scripts/utils/analyze_ros_graph.py 
-    Failed to import rclpy: No module named 'rclpy._rclpy_pybind11'
-    The C extension '/opt/ros/jazzy/lib/python3.12/site-packages/_rclpy_pybind11.cpython-311-x86_64-linux-gnu.so' isn't present on the system. Please refer to 'https://docs.ros.org/en/jazzy/How-To-Guides/Installation-Troubleshooting.html#import-failing-without-library-present-on-the-system' for possible solutions
-    Failed to import rclpy.node: No module named 'rclpy._rclpy_pybind11'
-    The C extension '/opt/ros/jazzy/lib/python3.12/site-packages/_rclpy_pybind11.cpython-311-x86_64-linux-gnu.so' isn't present on the system. Please refer to 'https://docs.ros.org/en/jazzy/How-To-Guides/Installation-Troubleshooting.html#import-failing-without-library-present-on-the-system' for possible solutions
-    Failed to import ros2topic.api: No module named 'rclpy._rclpy_pybind11'
-    The C extension '/opt/ros/jazzy/lib/python3.12/site-packages/_rclpy_pybind11.cpython-311-x86_64-linux-gnu.so' isn't present on the system. Please refer to 'https://docs.ros.org/en/jazzy/How-To-Guides/Installation-Troubleshooting.html#import-failing-without-library-present-on-the-system' for possible solutions
-    Failed to import ros2service.api: No module named 'rclpy._rclpy_pybind11'
-    The C extension '/opt/ros/jazzy/lib/python3.12/site-packages/_rclpy_pybind11.cpython-311-x86_64-linux-gnu.so' isn't present on the system. Please refer to 'https://docs.ros.org/en/jazzy/How-To-Guides/Installation-Troubleshooting.html#import-failing-without-library-present-on-the-system' for possible solutions
-    Error analyzing ROS system: ROS2 packages not available
-    ros@docker-desktop:/workspace$ exit
-    exit
-    ```
 
   </HUMAN_AI_NOTES>
 </SCRATCHPAD>

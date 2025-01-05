@@ -6,12 +6,13 @@ import signal
 import subprocess
 import sys
 import time
+from typing import Optional
 
 from ros_to_markdown.core.ros_detector import ROSDetector
 from ros_to_markdown.models.ros_components import ROSVersion
 
 
-def ensure_ros_core():
+def ensure_ros_core() -> Optional[subprocess.Popen]:
     """Ensure ROS core/master is running."""
     try:
         # Try to run roscore as a subprocess
@@ -28,7 +29,7 @@ def ensure_ros_core():
         return None
 
 
-def main():
+def main() -> None:
     """Launch turtlesim and teleop using version-appropriate ROS API."""
     ros_version = ROSDetector.detect_ros_version()
     roscore_process = None
@@ -102,7 +103,7 @@ def main():
         stderr=subprocess.PIPE,
     )
 
-    def cleanup(signum=None, frame=None):
+    def cleanup(signum: Optional[int] = None, frame: object = None) -> None:
         """Clean up processes on exit."""
         teleop.terminate()
         turtlesim.terminate()

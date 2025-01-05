@@ -127,10 +127,7 @@ Supported ROS distributions:
 | ROS1 Noetic   | Ubuntu 20.04   | Python 3.8     | N/A              | Supported |
 | ROS2 Humble   | Ubuntu 22.04   | Python 3.10    | CycloneDDS       | Supported |
 | ROS2 Iron     | Ubuntu 22.04   | Python 3.10    | CycloneDDS       | Supported |
-| ROS2 Jazzy    | Ubuntu 24.04   | Python 3.11*   | CycloneDDS       | Supported |
-
-*Note: Jazzy uses Python 3.12 but we are using Python 3.11 from deadsnakes PPA due to Ubuntu 24.04's Python package management changes.
-This is a temporary workaround until we can figure out how to use Python 3.12 properly.
+| ROS2 Jazzy    | Ubuntu 24.04   | Python 3.12    | CycloneDDS       | Supported |
 
 ## ROS2 DDS Configuration
 
@@ -148,53 +145,6 @@ This project uses CycloneDDS as the default DDS implementation for all ROS2 dist
 - FastDDS can have node discovery issues in Docker when multiple network interfaces are active
 - FastDDS may require complex XML configuration for optimal performance in Docker
 - Node discovery issues may manifest as "NODE_NAME_UNKNOWN" in graph visualization
-
-## Special Considerations for Ubuntu 24.04 (Jazzy)
-
-### Current Python Version Challenge
-
-There is currently a significant architectural challenge in the Jazzy environment:
-
-- **System State**: 
-  - ROS Jazzy uses system Python 3.12
-  - Ubuntu 24.04 enforces strict system package management (PEP 668)
-  - System packages cannot be modified without `--break-system-packages`
-
-- **Current Workaround**:
-  - Using Python 3.11 from deadsnakes PPA for test environment
-  - Running tests in isolated virtual environment
-  - Maintaining compatibility layer between ROS and test environment
-
-- **Known Issues**:
-  - Version mismatch between ROS (3.12) and tests (3.11)
-  - Potential ABI compatibility issues with ROS packages
-  - Not testing against actual production Python version
-
-- **Future Plans**:
-  - Migration to Python 3.12 for test infrastructure
-  - Proper isolation techniques for system Python
-  - Container-based test isolation approach
-
-This is a temporary solution while we develop a proper approach to handle
-Ubuntu 24.04's Python package restrictions. See `.cursornotes` for detailed
-context and decision history.
-
-The Jazzy environment requires special handling due to Ubuntu 24.04's Python package management:
-
-1. Uses Python 3.11 from deadsnakes PPA instead of system Python 3.12
-2. Creates a dedicated virtual environment for package installation
-3. Automatically activates the virtual environment in the container
-4. Uses ROS_DISTRO=jazzy
-
-Example Jazzy container usage:
-```bash
-# Development environment
-./docker/scripts/run-in-docker.sh ros2-jazzy-dev bash
-
-# The virtual environment is automatically activated
-# All pip installations should work without --break-system-packages
-pip install some-package
-```
 
 ## Development Workflow
 

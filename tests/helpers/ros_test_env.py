@@ -2,21 +2,23 @@ from contextlib import contextmanager
 import os
 import subprocess
 import time
-from typing import List
+from typing import Generator, List, Tuple
 
 from ros_to_markdown.core.ros_detector import ROSDetector
-from ros_to_markdown.models.ros_components import ROSVersion
+from ros_to_markdown.models.ros_components import ROSDistro, ROSVersion
+
+"""Helper functions for ROS test environment setup."""
 
 
 class ROSTestEnvironment:
     """Helper class to manage ROS test environments."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the ROS test environment."""
         self.ros_version, self.ros_distro = ROSDetector.detect_ros_version()
         self.processes: List[subprocess.Popen] = []
 
-    def setup(self):
+    def setup(self) -> None:
         """Set up the ROS test environment."""
         if self.ros_version == ROSVersion.ROS1:
             self._setup_ros1()
@@ -25,14 +27,14 @@ class ROSTestEnvironment:
         else:
             raise RuntimeError("Unknown ROS version")
 
-    def teardown(self):
+    def teardown(self) -> None:
         """Clean up the ROS test environment."""
         for process in self.processes:
             process.terminate()
             process.wait()
         self.processes.clear()
 
-    def _setup_ros1(self):
+    def _setup_ros1(self) -> None:
         """Set up ROS1 test environment with basic nodes."""
         # Start roscore if not running
         if not ROSDetector.is_ros_initialized():
@@ -56,7 +58,7 @@ class ROSTestEnvironment:
         )
         self.processes.append(teleop)
 
-    def _setup_ros2(self):
+    def _setup_ros2(self) -> None:
         """Set up ROS2 test environment with basic nodes."""
         # Start turtlesim node
         turtlesim = subprocess.Popen(
@@ -75,7 +77,7 @@ class ROSTestEnvironment:
         self.processes.append(teleop)
 
     @contextmanager
-    def running_env(self):
+    def running_env(self) -> Generator:
         """Context manager for running a temporary ROS environment.
 
         Usage:
@@ -89,10 +91,7 @@ class ROSTestEnvironment:
             self.teardown()
 
 
-"""Helper functions for ROS test environment setup."""
-
-
-def launch_turtlesim():
+def launch_turtlesim() -> Tuple[subprocess.Popen, subprocess.Popen]:
     """Launch turtlesim node for either ROS1 or ROS2."""
     ros_version = ROSDetector.detect_ros_version()
     env = dict(os.environ)
@@ -142,20 +141,22 @@ def launch_turtlesim():
         return None, turtlesim_process
 
 
-def verify_turtlesim_running():
+def verify_turtlesim_running() -> bool:
     """Verify that turtlesim node is running."""
     ros_version = ROSDetector.detect_ros_version()
-    ros_distro = ROSDetector.get_ros_distro()
+    ros_distro = ROSDetector.detect_ros_distro()
+
+    if ros_version is None or ros_version == ROSVersion.UNKNOWN:
+        return False
+
+    if ros_distro is None or ros_distro == ROSDistro.UNKNOWN:
+        return False
 
     try:
         if ros_version == ROSVersion.ROS1:
-            cmd = "source /opt/ros/noetic/setup.bash && rosnode list"
-        elif ros_distro == "humble":
-            cmd = "source /opt/ros/humble/setup.bash && ros2 node list"
-        elif ros_distro == "iron":
-            cmd = "source /opt/ros/iron/setup.bash && ros2 node list"
-        elif ros_distro == "jazzy":
-            cmd = "source /opt/ros/jazzy/setup.bash && ros2 node list"
+            cmd = f"source /opt/ros/{ros_distro.value}/setup.bash && rosnode list"
+        elif ros_version == ROSVersion.ROS2:
+            cmd = f"source /opt/ros/{ros_distro.value}/setup.bash && ros2 node list"
         else:
             raise RuntimeError("Unknown ROS distribution")
 

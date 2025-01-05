@@ -62,11 +62,11 @@ HAS_ROS2 = all([HAVE_RCLPY, HAVE_NODE, HAVE_ROS2NODE, HAVE_ROS2TOPIC, HAVE_ROS2S
 class ROS2Analyzer(GraphAnalyzer):
     """Analyzer for ROS2 computation graphs."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the analyzer."""
         if not HAS_ROS2:
             raise ImportError("ROS2 packages not available")
-        self.node = None
+        self.node: Optional[Node] = None
 
     def get_nodes(self) -> List[str]:
         """Get all nodes in the ROS2 system."""
@@ -77,6 +77,8 @@ class ROS2Analyzer(GraphAnalyzer):
             print(f"ROS_DOMAIN_ID={os.getenv('ROS_DOMAIN_ID')}")
 
             # First try direct discovery
+            if self.node is None:
+                raise ValueError("Node not initialized")
             node_names_and_ns = self.node.get_node_names_and_namespaces()
             print(f"Direct discovery returned: {node_names_and_ns}")
 
@@ -86,8 +88,8 @@ class ROS2Analyzer(GraphAnalyzer):
                 nodes.add(full_name)
 
             # Then get nodes from topics
-            publishers = {}  # topic -> list of publisher nodes
-            subscribers = {}  # topic -> list of subscriber nodes
+            publishers: Dict = {}  # topic -> list of publisher nodes
+            subscribers: Dict = {}  # topic -> list of subscriber nodes
 
             # Get all topics first
             for topic_name, _ in self.node.get_topic_names_and_types():
@@ -132,7 +134,7 @@ class ROS2Analyzer(GraphAnalyzer):
         """Get the message type for a ROS2 topic."""
         try:
             topics = dict(get_topic_names_and_types(node=self.node))
-            return topics.get(topic_name, ["unknown"])[0]
+            return topics.get(topic_name, ["unknown"])[0] or "unknown"
         except Exception:
             return "unknown"
 

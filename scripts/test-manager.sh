@@ -52,7 +52,7 @@ run_checks() {
     
     # 2. Type checking
     echo -e "\n${YELLOW}Running type checks...${NC}"
-    if ! mypy src tests; then
+    if ! python -m mypy .; then
         echo -e "${RED}Type checking failed${NC}"
         return 1
     fi

@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 from enum import Enum
+import os
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 
@@ -11,6 +12,25 @@ class ROSVersion(Enum):
     ROS1 = "ROS1"
     ROS2 = "ROS2"
     UNKNOWN = "UNKNOWN"
+
+
+class ROSDistro(Enum):
+    """Enum representing ROS distributions."""
+
+    NOETIC = "noetic"
+    MELODIC = "melodic"
+    FURY = "fury"
+    GALACTIC = "galactic"
+    HUMBLE = "humble"
+    IRON = "iron"
+    JAZZY = "jazzy"
+    ROLLING = "rolling"
+    UNKNOWN = "unknown"
+
+    @classmethod
+    def from_env(cls) -> "ROSDistro":
+        """Detect the ROS distribution from the environment variables."""
+        return cls(os.environ.get("ROS_DISTRO", "unknown"))
 
 
 class ConnectionType(Enum):
@@ -96,7 +116,7 @@ class ROSTopic:
     publishers: List[str] = field(default_factory=list)
     subscribers: List[str] = field(default_factory=list)
     frequency: Optional[float] = None
-    qos_profile: Optional[Dict[str, any]] = None  # ROS2 only
+    qos_profile: Optional[Dict[str, Any]] = None  # ROS2 only
 
 
 @dataclass
@@ -159,7 +179,7 @@ class ROSGraphEdge:
     transport: Optional[str] = None
     frequency: Optional[float] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate edge attributes after initialization."""
         if self.connection_type not in ConnectionType.values():
             raise ValueError(
@@ -186,13 +206,14 @@ class ROSGraphEdge:
         if self.qos_profile is not None:
             self._validate_qos_profile()
 
-    def _validate_qos_profile(self):
+    def _validate_qos_profile(self) -> None:
         """Validate ROS2 QoS profile structure."""
         required_fields = {"reliability", "durability", "history"}
-        if not all(field in self.qos_profile for field in required_fields):
-            raise ValueError(f"QoS profile missing required fields: {required_fields}")
+        if self.qos_profile is not None:
+            if not all(field in self.qos_profile for field in required_fields):
+                raise ValueError(f"QoS profile missing required fields: {required_fields}")
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         """Generate hash based on immutable fields.
 
         Returns:
@@ -202,7 +223,7 @@ class ROSGraphEdge:
             (self.source, self.target, self.connection_type, self.topic_name, self.message_type)
         )
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         """Compare two ROSGraphEdge objects for equality.
 
         Args:
@@ -436,7 +457,7 @@ class ROSGraph:
             Dictionary with 'publishers', 'subscribers', 'services', 'clients',
             'action_servers', and 'action_clients' lists
         """
-        connections = {
+        connections: Dict[str, List[ROSGraphEdge]] = {
             "publishers": [],
             "subscribers": [],
             "services": [],
@@ -514,7 +535,7 @@ class ROSGraph:
             stack: List[str],
             on_stack: Set[str],
             cycles: List[List[str]],
-        ):
+        ) -> List[List[str]]:
             # Initialize node
             index[node] = len(index)
             lowlink[node] = index[node]
@@ -545,6 +566,8 @@ class ROSGraph:
                         break
                 if len(component) > 1:  # Only include components with cycles
                     cycles.append(component)
+
+            return cycles
 
         index: Dict[str, int] = {}
         lowlink: Dict[str, int] = {}

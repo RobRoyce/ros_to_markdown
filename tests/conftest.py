@@ -1,15 +1,21 @@
 import os
 from pathlib import Path
+from typing import Dict, Generator
 from unittest.mock import patch
-
-import pytest
 
 from ros_to_markdown.core.ros_detector import ROSDetector
 from ros_to_markdown.models.ros_components import ROSVersion
 
+import pytest
+
+try:
+    import rospy
+except ImportError:
+    pass
+
 
 @pytest.fixture
-def ros_env_config():
+def ros_env_config() -> Dict[str, any]:
     """Shared ROS environment configurations."""
     return {
         "ros1": {
@@ -34,34 +40,34 @@ def ros_env_config():
 
 
 @pytest.fixture
-def mock_ros_env(ros_env_config):
+def mock_ros_env(ros_env_config: Dict[str, any]) -> any:
     """Configurable ROS environment fixture."""
 
     class ROSEnvContext:
-        def __init__(self, ros_version: str):
+        def __init__(self, ros_version: str) -> None:
             self.ros_version = ros_version
             self.env = ros_env_config[ros_version]["env"]
 
-        def __enter__(self):
+        def __enter__(self) -> "ROSEnvContext":
             self.patcher = patch.dict(os.environ, self.env)
             self.patcher.start()
             return self
 
-        def __exit__(self, exc_type, exc_val, exc_tb):
+        def __exit__(self, exc_type: any, exc_val: any, exc_tb: any) -> None:
             self.patcher.stop()
 
-    def _mock_env(ros_version: str):
+    def _mock_env(ros_version: str) -> ROSEnvContext:
         return ROSEnvContext(ros_version)
 
     return _mock_env
 
 
 @pytest.fixture
-def mock_workspace():
+def mock_workspace() -> Generator:
     """Configurable workspace structure fixture."""
 
     class WorkspaceContext:
-        def __init__(self, ros_version: str, workspace_path: str = "/workspace"):
+        def __init__(self, ros_version: str, workspace_path: str = "/workspace") -> None:
             self.ros_version = ros_version
             self.workspace = Path(workspace_path)
 
@@ -76,13 +82,13 @@ def mock_workspace():
                     "path": "/opt/ros/iron",
                 },
                 "jazzy": {
-                    "python_version": "3.11",
+                    "python_version": "3.12",
                     "path": "/opt/ros/jazzy",
                 },
             }
 
-        def __enter__(self):
-            def path_exists(path):
+        def __enter__(self) -> Path:
+            def path_exists(path: str) -> bool:
                 path = Path(path)
                 if self.ros_version == "ros1":
                     return any(
@@ -142,18 +148,18 @@ def mock_workspace():
 
             return self.workspace
 
-        def __exit__(self, exc_type, exc_val, exc_tb):
+        def __exit__(self, exc_type: any, exc_val: any, exc_tb: any) -> None:
             self.path_patcher.stop()
             self.env_patcher.stop()
 
-    def _mock_workspace(ros_version: str, workspace_path: str = "/workspace"):
+    def _mock_workspace(ros_version: str, workspace_path: str = "/workspace") -> WorkspaceContext:
         return WorkspaceContext(ros_version, workspace_path)
 
     return _mock_workspace
 
 
 @pytest.fixture(scope="class")
-def ensure_workspace(request, ros_env_config):
+def ensure_workspace(request: pytest.FixtureRequest, ros_env_config: Dict[str, any]) -> Path:
     """Create actual workspace based on ROS version."""
     workspace = Path("/home/ros/ws")
     ros_version = ROSDetector.detect_ros_version()
@@ -177,7 +183,7 @@ def ensure_workspace(request, ros_env_config):
 
 
 @pytest.fixture
-def mock_package_xml():
+def mock_package_xml() -> str:
     """Mock package.xml content."""
     return """<?xml version="1.0"?>
 <package format="2">
@@ -188,3 +194,12 @@ def mock_package_xml():
   <license>Apache-2.0</license>
 </package>
 """
+
+
+@pytest.fixture(autouse=True)
+def rospy_shutdown() -> Generator:
+    """Ensure rospy is shutdown after each test."""
+    yield
+    if "rospy" in globals():
+        if rospy.get_node_uri():
+            rospy.shutdown()

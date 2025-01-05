@@ -6,12 +6,13 @@ import os
 import subprocess
 import sys
 import time
+from typing import Optional
 
 from ros_to_markdown.core.ros_detector import ROSDetector
 from ros_to_markdown.models.ros_components import ROSVersion
 
 
-def ensure_ros_core():
+def ensure_ros_core() -> Optional[subprocess.Popen]:
     """Ensure ROS core/master is running."""
     try:
         # Try to run roscore as a subprocess
@@ -28,10 +29,10 @@ def ensure_ros_core():
         return None
 
 
-def ensure_ros_environment():
+def ensure_ros_environment() -> bool:
     """Ensure the appropriate ROS environment is sourced."""
     ros_version = ROSDetector.detect_ros_version()
-    ros_distro = ROSDetector.get_ros_distro()
+    ros_distro = ROSDetector.detect_ros_distro()
 
     if not ros_distro:
         print("Error: ROS_DISTRO environment variable not set")
@@ -43,7 +44,7 @@ def ensure_ros_environment():
 
     # Check if we need to source the environment
     if ros_version in [ROSVersion.ROS1, ROSVersion.ROS2]:
-        ros_setup = f"/opt/ros/{ros_distro}/setup.bash"
+        ros_setup = f"/opt/ros/{ros_distro.value}/setup.bash"
         if not os.path.exists(ros_setup):
             print(f"Error: ROS setup file not found at {ros_setup}")
             return False
@@ -73,14 +74,14 @@ def print_mermaid_style() -> str:
     classDef riskEdge stroke:#ff0000,stroke-width:3px,stroke-dasharray:5 5"""
 
 
-def main():
+def main() -> None:
     """Analyze and visualize the running ROS system."""
     # Ensure ROS environment is properly sourced
     if not ensure_ros_environment():
         return
 
     ros_version = ROSDetector.detect_ros_version()
-    ros_distro = ROSDetector.get_ros_distro()
+    ros_distro = ROSDetector.detect_ros_distro()
     roscore_process = None
 
     try:
@@ -94,14 +95,16 @@ def main():
         if ros_version == ROSVersion.ROS1:
             from ros_to_markdown.analyzers.ros1 import ROS1Analyzer
 
-            analyzer = ROS1Analyzer()
+            ros1_analyzer: ROS1Analyzer = ROS1Analyzer()
         elif ros_version == ROSVersion.ROS2:
             from ros_to_markdown.analyzers.ros2 import ROS2Analyzer
 
-            analyzer = ROS2Analyzer()
+            ros2_analyzer: ROS2Analyzer = ROS2Analyzer()
         else:
             print("Error: Unknown ROS version")
             return
+
+        analyzer = ros1_analyzer if ros_version == ROSVersion.ROS1 else ros2_analyzer
 
         # Give ROS time to discover nodes
         time.sleep(2)

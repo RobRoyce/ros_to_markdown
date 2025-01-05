@@ -33,6 +33,8 @@ ENV/
 
 # Test
 .coverage
+.coverage_reports
+.ruff_cache/
 .pytest_cache/
 htmlcov/
 

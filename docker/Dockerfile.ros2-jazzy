@@ -3,32 +3,17 @@ FROM osrf/ros:jazzy-desktop-full
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install Python 3.11 and development tools
+# Install development tools
 RUN apt-get update && apt-get install -y \
     software-properties-common \
-    && add-apt-repository ppa:deadsnakes/ppa \
     && apt-get update && apt-get install -y \
-    python3.11 \
-    python3.11-venv \
-    python3.11-dev \
     python3-pip \
-    python3-pytest \
-    python3-pytest-cov \
-    python3-setuptools \
-    python3-wheel \
-    python3-empy \
-    python3-lark \
-    python3-colcon-common-extensions \
-    python3-pytest-repeat \
-    python3-pytest-rerunfailures \
-    python3-pytest-timeout \
-    python3-coverage \
-    python3-yaml \
+    python3.12-venv \
     ros-jazzy-turtlesim \
     ros-jazzy-joy \
+    ros-jazzy-rmw-cyclonedds-cpp \
     git \
     sudo \
-    ros-jazzy-rmw-cyclonedds-cpp \
     x11-apps \
     mesa-utils \
     && rm -rf /var/lib/apt/lists/*
@@ -76,17 +61,16 @@ COPY --chown=$USERNAME:$USERNAME tests tests/
 # Switch to non-root user
 USER $USERNAME
 
-# Create and activate Python 3.11 virtual environment
-RUN python3.11 -m venv /home/$USERNAME/.venv
+# Create and activate Python virtual environment
+RUN python3 -m venv /home/$USERNAME/.venv
 
 # Install the package in development mode
 RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
     source /home/$USERNAME/.venv/bin/activate && \
     pip install --upgrade pip && \
-    pip install lark && \
-    pip install -e '.[ros2,dev]' && \
-    # Create symlinks for ROS Python packages
-    ln -s /opt/ros/jazzy/lib/python3.12/site-packages/* /home/$USERNAME/.venv/lib/python3.11/site-packages/ || true"
+    pip install wheel empy lark setuptools pyyaml colcon-common-extensions numpy psutil && \
+    pip install pytest pytest-cov pytest-repeat pytest-rerunfailures pytest-timeout coverage && \
+    pip install -e '.[ros2,dev]'"
 
 # Source the workspace in .bashrc
 RUN echo "source /opt/ros/jazzy/setup.bash" >> /home/$USERNAME/.bashrc && \

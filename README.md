@@ -62,7 +62,6 @@ Note: ROS2 Jazzy support is temporarily disabled. The Dockerfile and configurati
 ### Prerequisites
 
 - Docker Engine and Docker Compose (Docker Desktop recommended)
-- Python 3.8-3.11
 - Git
 
 ### Quick Start
@@ -121,7 +120,7 @@ ros_to_markdown/
 │       └── utils/          # Utility functions
 ├── tests/
 │   ├── core/              # Core tests
-│   └── test_helpers/      # Test utilities
+│   └── helpers/      # Test utilities
 ├── docker/
 │   ├── Dockerfile.*       # Docker configurations
 │   └── scripts/           # Docker helper scripts
