@@ -1,0 +1,18 @@
+<package format="3">
+  <name>robot_control</name>
+  <version>0.0.0</version>
+  <description>Robot velocity control for ROS2</description>
+  <maintainer email="you@todo.todo">YourName</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

@@ -1,0 +1,28 @@
+<launch>
+    <!-- sensor_data -->
+    <node pkg="sensor_data" type="temperature_publisher.py" name="temperature_publisher" output="screen"/>
+    <node pkg="sensor_data" type="humidity_publisher.py"    name="humidity_publisher"    output="screen"/>
+
+    <!-- data_processing -->
+    <node pkg="data_processing" type="data_filter.py"   name="data_filter"   output="screen"/>
+    <node pkg="data_processing" type="data_processor.py" name="data_processor" output="screen"/>
+
+    <!-- environment_integration -->
+    <node pkg="environment_integration" type="environment_builder.py" name="environment_builder" output="screen"/>
+
+    <!-- robot_control -->
+    <node pkg="robot_control" type="move_robot.py" name="move_robot" output="screen"/>
+
+    <!-- action_server -->
+    <node pkg="action_server" type="move_to_goal.py" name="move_to_goal" output="screen"/>
+
+    <!-- tricky_scenarios -->
+    <node pkg="tricky_scenarios" type="conflicting_publishers.py" name="conflicting_temperature_publisher" output="screen"/>
+    <node pkg="tricky_scenarios" type="delayed_response.py"        name="delayed_response"                 output="screen"/>
+
+    <!-- visualization -->
+    <node pkg="visualization" type="visualize_data.py" name="visualize_data" output="screen"/>
+
+    <!-- user_interface -->
+    <node pkg="user_interface" type="command_listener.py" name="command_listener" output="screen"/>
+</launch>

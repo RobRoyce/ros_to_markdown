@@ -1,0 +1,14 @@
+<package format="2">
+  <name>environment_integration</name>
+  <version>0.0.0</version>
+  <description>Builds or updates environment data</description>
+  <maintainer email="you@todo.todo">YourName</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>message_generation</depend>
+  <depend>message_runtime</depend>
+</package>
