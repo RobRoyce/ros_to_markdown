@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
+from geometry_msgs.msg import Twist
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Twist
 from std_msgs.msg import String
+
 
 class MoveRobot(Node):
     def __init__(self):

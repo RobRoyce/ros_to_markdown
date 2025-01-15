@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-import rospy
-import actionlib
-from geometry_msgs.msg import Twist
-from environment_integration.msg import EnvironmentData
 from action_server.msg import MoveToGoalAction, MoveToGoalFeedback, MoveToGoalResult
+import actionlib
+from environment_integration.msg import EnvironmentData
+from geometry_msgs.msg import Twist
+import rospy
+
 
 class MoveToGoalServer:
     def __init__(self):
@@ -42,7 +43,7 @@ class MoveToGoalServer:
             twist.linear.x = 0.1
             self.cmd_vel_pub.publish(twist)
 
-            feedback.current_status = "Moving... step {}/5".format(i+1)
+            feedback.current_status = f"Moving... step {i+1}/5"
             self.server.publish_feedback(feedback)
             rate.sleep()
 

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
+from data_processing.msg import FilteredData
 import rospy
 from std_msgs.msg import Float64
-from data_processing.msg import FilteredData
+
 
 class DataFilterNode:
     def __init__(self):

@@ -2,6 +2,7 @@
 import rospy
 from std_msgs.msg import String
 
+
 def data_callback(msg):
     rospy.loginfo("VISUALIZE: Received processed data => %s", msg.data)
 

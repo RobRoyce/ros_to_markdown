@@ -1,25 +1,21 @@
 #!/usr/bin/env python3
 
-import rclpy
-from rclpy.node import Node
-from geometry_msgs.msg import Twist
-from environment_integration.msg import EnvironmentData
-
-# In ROS2, you'd typically import the auto-generated Python module for your action.
-# This might look like: 
-# from action_server.action import MoveToGoal
-# But for brevity, we show a minimal approach.
-
-# We can use the "rclpy.action" interfaces:
-from rclpy.action import ActionServer, CancelResponse, GoalResponse
-
 # You'd also have a generated "MoveToGoal" class from your .action:
 # from action_server.action._move_to_goal import MoveToGoal, MoveToGoal_Result, MoveToGoal_Feedback
 # or something similar once it's compiled.
-
 # We'll stub these for demonstration:
-from action_msgs.msg import GoalStatus
-from rclpy.duration import Duration
+from environment_integration.msg import EnvironmentData
+from geometry_msgs.msg import Twist
+import rclpy
+
+# In ROS2, you'd typically import the auto-generated Python module for your action.
+# This might look like:
+# from action_server.action import MoveToGoal
+# But for brevity, we show a minimal approach.
+# We can use the "rclpy.action" interfaces:
+from rclpy.action import CancelResponse, GoalResponse
+from rclpy.node import Node
+
 
 class MoveToGoalServer(Node):
     def __init__(self):

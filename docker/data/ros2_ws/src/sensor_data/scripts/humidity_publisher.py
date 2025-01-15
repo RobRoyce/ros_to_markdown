@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
+import random
+
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float64
-import random
+
 
 class HumidityPublisher(Node):
     def __init__(self):

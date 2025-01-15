@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
+import random
+
 import rospy
 from std_msgs.msg import Float64
-import random
+
 
 def main():
     rospy.init_node('conflicting_temperature_publisher', anonymous=True)

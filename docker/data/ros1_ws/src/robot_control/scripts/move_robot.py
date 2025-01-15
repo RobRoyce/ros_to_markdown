@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-import rospy
 from geometry_msgs.msg import Twist
+import rospy
 from std_msgs.msg import String
+
 
 class MoveRobotNode:
     def __init__(self):

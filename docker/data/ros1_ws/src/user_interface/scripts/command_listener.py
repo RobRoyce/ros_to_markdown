@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-import rospy
 from geometry_msgs.msg import Twist
+import rospy
+
 
 def main():
     rospy.init_node('command_listener', anonymous=True)

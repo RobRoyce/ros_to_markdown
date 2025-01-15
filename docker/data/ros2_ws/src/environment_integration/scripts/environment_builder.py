@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
+from environment_integration.msg import EnvironmentData
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-from environment_integration.msg import EnvironmentData
+
 
 class EnvironmentBuilder(Node):
     def __init__(self):

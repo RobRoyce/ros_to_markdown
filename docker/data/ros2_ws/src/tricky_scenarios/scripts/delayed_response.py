@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
+import time
+
 import rclpy
 from rclpy.node import Node
-import time
-from std_srvs.srv import Trigger, TriggerResponse
+from std_srvs.srv import Trigger
+
 
 class DelayedResponse(Node):
     def __init__(self):

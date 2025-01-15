@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
+from data_processing.msg import FilteredData
 import rclpy
 from rclpy.node import Node
-from data_processing.msg import FilteredData
 from std_msgs.msg import String
+
 
 class DataProcessor(Node):
     def __init__(self):

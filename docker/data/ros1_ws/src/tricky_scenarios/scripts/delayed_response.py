@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-import rospy
 import time
+
+import rospy
 from std_srvs.srv import Trigger, TriggerResponse
+
 
 def handle_delayed_request(req):
     rospy.loginfo("DelayedResponse: Received request. Sleeping 5 seconds...")

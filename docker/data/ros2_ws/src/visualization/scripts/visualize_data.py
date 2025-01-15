@@ -4,6 +4,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 
+
 class VisualizeData(Node):
     def __init__(self):
         super().__init__('visualize_data')

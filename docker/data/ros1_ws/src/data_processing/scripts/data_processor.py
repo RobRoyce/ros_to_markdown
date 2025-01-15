@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-import rospy
 from data_processing.msg import FilteredData
+import rospy
 from std_msgs.msg import String
+
 
 class DataProcessorNode:
     def __init__(self):
@@ -10,8 +11,7 @@ class DataProcessorNode:
         rospy.Subscriber('/data/filtered', FilteredData, self.filtered_callback)
 
     def filtered_callback(self, msg):
-        text_out = "Processed => temp: {:.2f}, hum: {:.2f}, valid: {}".format(
-            msg.temperature, msg.humidity, msg.valid)
+        text_out = f"Processed => temp: {msg.temperature:.2f}, hum: {msg.humidity:.2f}, valid: {msg.valid}"
         rospy.loginfo("DataProcessor: %s", text_out)
         self.pub_processed.publish(text_out)
 

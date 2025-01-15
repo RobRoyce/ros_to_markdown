@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
+from environment_integration.msg import EnvironmentData
 import rospy
 from std_msgs.msg import String
-from environment_integration.msg import EnvironmentData
+
 
 class EnvironmentBuilderNode:
     def __init__(self):
