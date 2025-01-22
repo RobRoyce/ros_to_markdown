@@ -7,14 +7,15 @@ setup(
     version='0.0.0',
     packages=[package_name],
     data_files=[
+        ('share/ament_index/resource_index/packages',
+            ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        # If we had a launch file here, we'd list it in data_files
     ],
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='YourName',
     maintainer_email='you@todo.todo',
-    description='ROS2 data_processing package',
+    description='ROS2 data processing package',
     license='MIT',
     entry_points={
         'console_scripts': [
