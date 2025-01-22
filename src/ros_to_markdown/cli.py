@@ -1,7 +1,7 @@
 import asyncio
 import os
-from typing import Optional
 from pathlib import Path
+from typing import Optional
 
 import click
 
@@ -9,9 +9,8 @@ from .analysis.factory import get_analyzer
 from .config.environment import get_env_config
 from .config.schema import Config, RosDistro, RosVersion
 from .logging import get_logger, setup_logging
-from . import perspectives  # This will trigger stage registration
-from .perspectives.loader import load_perspective
 from .perspectives.engine import PerspectiveEngine
+from .perspectives.loader import load_perspective
 
 
 def get_config(cli_config: Optional[dict] = None) -> Config:
@@ -102,7 +101,7 @@ def runtime(
 
     # Initialize analyzer
     analyzer = get_analyzer(config)
-    
+
     # Load perspective (use basic if none specified)
     perspective_name = config.perspective or "basic"
     try:
@@ -114,30 +113,30 @@ def runtime(
 
     # Create and run perspective engine
     engine = PerspectiveEngine(perspective)
-    
+
     async def run_analysis():
         try:
             # Run perspective pipeline
             result = await engine.execute({"analyzer": analyzer})
-            
+
             # Get markdown output
             if "overview_doc" not in result:
                 logger.error("Perspective did not generate expected output")
                 return
-                
+
             # Write output
             output_dir = Path(config.output_dir or ".")
             output_dir.mkdir(parents=True, exist_ok=True)
-            
+
             output_file = output_dir / f"{perspective.name}.md"
             with open(output_file, "w") as f:
                 f.write(result["overview_doc"])
-                
+
             logger.info(f"Analysis complete. Output written to {output_file}")
-            
+
         except Exception as e:
             logger.error("Analysis failed", error=str(e))
-    
+
     asyncio.run(run_analysis())
 
 

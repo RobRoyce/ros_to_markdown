@@ -2,8 +2,8 @@ import os
 from pathlib import Path
 from typing import Optional
 
-import yaml
 from pydantic import ValidationError
+import yaml
 
 from ..logging import get_logger
 from .models import Perspective
@@ -14,7 +14,7 @@ def get_builtin_perspective_path(name: str) -> Optional[Path]:
     """Get path to a builtin perspective definition."""
     builtin_dir = Path(__file__).parent / "definitions"
     perspective_path = builtin_dir / f"{name}.yaml"
-    
+
     if perspective_path.exists():
         return perspective_path
     return None
@@ -34,7 +34,7 @@ def load_perspective(name: str) -> Perspective:
         if not perspective_path.exists():
             raise ValueError(f"Perspective not found: {name}")
         logger.debug(f"Loading user perspective: {name}")
-    
+
     try:
         with open(perspective_path) as f:
             perspective_dict = yaml.safe_load(f)
@@ -44,4 +44,4 @@ def load_perspective(name: str) -> Perspective:
         raise
     except Exception as e:
         logger.error(f"Error loading perspective: {e}")
-        raise 
+        raise

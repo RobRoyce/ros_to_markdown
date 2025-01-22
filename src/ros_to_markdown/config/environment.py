@@ -1,22 +1,33 @@
+"""Environment configuration loading."""
 import os
 from typing import Optional
 
-from .schema import Config, RuntimeConfig
+from .schema import Config, RosVersion, RosDistro
 
 
 def get_env_config() -> Optional[Config]:
     """Load configuration from environment variables."""
-    if not any(k.startswith("R2MD_") for k in os.environ):
+    # Required ROS environment variables
+    ros_version = os.getenv("ROS_VERSION")
+    ros_distro = os.getenv("ROS_DISTRO")
+    
+    if not ros_version or not ros_distro:
         return None
-
-    runtime_config = RuntimeConfig(
-        namespace=os.getenv("R2MD_NAMESPACE"),
-        node_filter=os.getenv("R2MD_NODE_FILTER", "").split(",") if os.getenv("R2MD_NODE_FILTER") else None,
-        topic_filter=os.getenv("R2MD_TOPIC_FILTER", "").split(",") if os.getenv("R2MD_TOPIC_FILTER") else None,
-    )
-
-    return Config(
-        runtime=runtime_config,
-        output_dir=os.getenv("R2MD_OUTPUT_DIR", "./docs"),
-        debug=os.getenv("R2MD_DEBUG", "false").lower() == "true"
-    )
+        
+    try:
+        config = Config(
+            ros_version=RosVersion(int(ros_version)),
+            ros_distro=RosDistro(ros_distro),
+            output_dir=os.getenv("ROS_TO_MARKDOWN_OUTPUT_DIR"),
+            debug=os.getenv("ROS_TO_MARKDOWN_DEBUG", "").lower() == "true",
+            perspective=os.getenv("ROS_TO_MARKDOWN_PERSPECTIVE")
+        )
+        
+        # Update runtime config if namespace specified
+        if namespace := os.getenv("ROS_TO_MARKDOWN_NAMESPACE"):
+            config.runtime.namespace = namespace
+            
+        return config
+        
+    except (ValueError, TypeError) as e:
+        raise ValueError(f"Invalid environment configuration: {e}")

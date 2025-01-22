@@ -50,7 +50,9 @@ def add_rich_renderer(
 
 
 def setup_logging(debug: bool = False) -> None:
-    """Configure structlog for the application."""
+    """Configure logging for the application."""
+    logger = logging.getLogger("ros_to_markdown")
+    logger.setLevel(logging.DEBUG if debug else logging.INFO)
     # Set up stdlib logging
     logging.basicConfig(
         format="%(message)s",

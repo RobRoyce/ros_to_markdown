@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Dict, List, Optional, Union
+
 from pydantic import BaseModel, Field
 
 
@@ -48,4 +49,4 @@ class Perspective(BaseModel):
     version: str
     description: str
     pipeline: PipelineConfig
-    compatibility: CompatibilityConfig 
+    compatibility: CompatibilityConfig
