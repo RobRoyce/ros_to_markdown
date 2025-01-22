@@ -1,0 +1,10 @@
+# Goal
+geometry_msgs/PoseStamped target_pose
+
+---
+# Result
+bool success
+
+---
+# Feedback
+string current_status

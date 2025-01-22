@@ -1,0 +1,13 @@
+<package format="2">
+  <name>data_processing</name>
+  <version>0.0.0</version>
+  <description>Processes data from sensors</description>
+  <maintainer email="you@todo.todo">YourName</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>message_generation</depend>
+  <depend>message_runtime</depend>
+</package>

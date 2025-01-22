@@ -1,0 +1,4 @@
+#!/usr/bin/env python3
+
+from environment_integration.environment_builder import main
+main() 

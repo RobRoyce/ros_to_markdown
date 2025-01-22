@@ -1,0 +1,6 @@
+# Request is expected to be empty
+---
+float64 temperature # Temperature reading
+float64 humidity # Humidity reading
+bool    valid # Whether the reading is valid
+string  timestamp# Timestamp of the reading

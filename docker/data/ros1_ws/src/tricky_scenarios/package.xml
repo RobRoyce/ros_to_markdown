@@ -1,0 +1,16 @@
+<package format="2">
+  <name>tricky_scenarios</name>
+  <version>0.0.0</version>
+  <description>Tests concurrency, conflicting publishers, and delayed services</description>
+  <maintainer email="you@todo.todo">YourName</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>message_generation</depend>
+  <depend>message_runtime</depend>
+</package>

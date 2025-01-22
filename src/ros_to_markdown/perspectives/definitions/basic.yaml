@@ -1,0 +1,33 @@
+name: basic
+version: "1.0"
+description: "Basic ROS system overview showing nodes and topics"
+
+compatibility:
+  min_version: "1.0"
+  max_version: "2.0"
+  deprecated_features: []
+
+pipeline:
+  collect:
+    - type: system_snapshot
+      name: collect_system_state
+      inputs: ["analyzer"]
+      output: system_state
+      config: {}
+
+  transform:
+    - type: graph_builder
+      name: build_system_graph
+      inputs: ["system_state"]
+      output: system_graph
+      config:
+        include_nodes: true
+        include_topics: true
+
+  render:
+    - type: markdown
+      name: generate_overview
+      inputs: ["system_graph"]
+      output: overview_doc
+      config:
+        template: overview.md.j2 

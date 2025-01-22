@@ -1,0 +1,4 @@
+#!/usr/bin/env python3
+
+from data_processing.data_filter import main
+main() 

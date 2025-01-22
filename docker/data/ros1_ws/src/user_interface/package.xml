@@ -1,0 +1,13 @@
+<package format="2">
+  <name>user_interface</name>
+  <version>0.0.0</version>
+  <description>Provides a command listener or teleop node</description>
+  <maintainer email="you@todo.todo">YourName</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+</package>

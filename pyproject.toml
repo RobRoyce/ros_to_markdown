@@ -7,7 +7,15 @@ authors = [
 ]
 requires-python = ">=3.8,<3.13"
 dependencies = [
-    "pyyaml>=5.3.1",
+    "pyyaml",
+    "structlog[dev]",
+    "colorama>=0.4.0",
+    "pydantic",
+    "jinja2",
+    "clang==13.0.1",
+    "networkx",
+    "rich",
+    "click",
 ]
 readme = "README.md"
 license = { text = "Apache 2.0" }
@@ -29,7 +37,6 @@ dev = [
     "pytest-cov>=4.0",
     "ruff>=0.0.290",
     "pytest-mock>=3.10.0",
-    "pytest-asyncio>=0.21.0"
 ]
 
 [build-system]
@@ -57,10 +64,28 @@ asyncio_default_fixture_loop_scope = "function"
 python_version = "3.8"
 warn_return_any = true
 warn_unused_configs = true
-exclude = 'tests'
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = false
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+exclude = [
+    'src/ros_to_markdown_old/',
+    'tests_old/',
+]
+
+[[tool.mypy.overrides]]
+module = [
+    "rclpy.*",
+    "rospy.*",
+    "pydantic.*",
+    "structlog.*",
+]
 ignore_missing_imports = true
 
-# mypy per-module options:
-[[tool.mypy.overrides]]
-module = ".*"
-disallow_untyped_defs = true
+[project.scripts]
+ros-to-markdown = "ros_to_markdown.cli:main"

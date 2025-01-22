@@ -1,0 +1,14 @@
+<package format="2">
+  <name>sensor_data</name>
+  <version>0.0.0</version>
+  <description>ROS1 package to publish sensor data (temperature, humidity, etc.)</description>
+  <maintainer email="you@todo.todo">YourName</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+</package>
+
