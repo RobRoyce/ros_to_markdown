@@ -10,6 +10,7 @@ services:
       dockerfile: docker/Dockerfile.ros1
     volumes:
       - .:/workspace:rw
+      - ./docker/data/ros1_ws:/ros1_ws:rw
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - ${XAUTHORITY:-$HOME/.Xauthority}:/root/.Xauthority:ro
     environment:
@@ -43,6 +44,7 @@ services:
       dockerfile: docker/Dockerfile.ros2-humble
     volumes:
       - .:/workspace:rw
+      - ./docker/data/ros2_ws:/ros2_ws:rw
       - /tmp/.X11-unix:/tmp/.X11-unix
     environment:
       - ROS_DISTRO=humble
@@ -77,6 +79,7 @@ services:
       dockerfile: docker/Dockerfile.ros2-iron
     volumes:
       - .:/workspace:rw
+      - ./docker/data/ros2_ws:/ros2_ws:rw
       - /tmp/.X11-unix:/tmp/.X11-unix
     environment:
       - ROS_DISTRO=iron
@@ -111,6 +114,7 @@ services:
       dockerfile: docker/Dockerfile.ros2-jazzy
     volumes:
       - .:/workspace:rw
+      - ./docker/data/ros2_ws:/ros2_ws:rw
       - /tmp/.X11-unix:/tmp/.X11-unix
     environment:
       - ROS_DISTRO=jazzy

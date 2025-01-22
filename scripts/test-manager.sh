@@ -41,7 +41,7 @@ run_checks() {
     
     # 1. Linting
     echo -e "\n${YELLOW}Running Ruff linter and formatter...${NC}"
-    if ! ruff check ${VERBOSE:+--verbose} .; then
+    if ! ruff check ${VERBOSE:+--verbose} . --fix; then
         echo -e "${RED}Linting failed${NC}"
         return 1
     fi
