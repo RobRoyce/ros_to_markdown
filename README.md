@@ -12,20 +12,13 @@ The generated documentation is optimized for consumption by LLMs and AI agents.
 
 ## Installation
 ```bash
-pip install ros-to-markdown
+pip install -e .
 ```
 
-See the [Quick Start Guide](documentation/quickstart.md) for usage instructions.
 
 ## Supported ROS Distributions
 - ROS1: Noetic
 - ROS2: Humble (LTS), Iron (LTS), Jazzy
-
-## Development
-This project is under active development. For contributing:
-1. Check the [Development Guide](documentation/development.md)
-2. Review the [System Design](documentation/system_design_document.md)
-3. Read our [Test Plan](documentation/test_plan.md)
 
 ## Project Status
 > [!Note]
