@@ -1,7 +1,7 @@
 import os
 from typing import Optional
 
-from .schema import Config, RosVersion, RuntimeConfig
+from .schema import Config, RuntimeConfig
 
 
 def get_env_config() -> Optional[Config]:

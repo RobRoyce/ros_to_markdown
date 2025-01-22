@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, List, Optional
 
+
 @dataclass
 class NodeInfo:
     """Basic information about a ROS node."""
@@ -30,18 +31,18 @@ class SystemSnapshot:
 
 class SystemAnalyzer(ABC):
     """Base interface for ROS system analyzers."""
-    
+
     @abstractmethod
     async def get_snapshot(self) -> SystemSnapshot:
         """Get current system state."""
         pass
-    
+
     @abstractmethod
     async def analyze_frequency(self, topic_name: str, duration: float = 1.0) -> float:
         """Analyze message frequency for a topic."""
         pass
-    
+
     @abstractmethod
     async def analyze_latency(self, source: str, target: str, duration: float = 1.0) -> float:
         """Analyze latency between two nodes."""
-        pass 
+        pass

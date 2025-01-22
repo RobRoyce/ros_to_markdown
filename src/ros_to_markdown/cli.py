@@ -1,13 +1,17 @@
-import click
-import os
-from typing import Optional, List
 import asyncio
+import os
+from typing import Optional
+from pathlib import Path
 
-from .config.schema import Config, RosVersion, RosDistro
-from .config.environment import get_env_config
-from .logging import setup_logging, get_logger
-from .analysis.interfaces import SystemAnalyzer
+import click
+
 from .analysis.factory import get_analyzer
+from .config.environment import get_env_config
+from .config.schema import Config, RosDistro, RosVersion
+from .logging import get_logger, setup_logging
+from . import perspectives  # This will trigger stage registration
+from .perspectives.loader import load_perspective
+from .perspectives.engine import PerspectiveEngine
 
 
 def get_config(cli_config: Optional[dict] = None) -> Config:
@@ -99,15 +103,37 @@ def runtime(
     # Initialize analyzer
     analyzer = get_analyzer(config)
     
-    # Run analysis
+    # Load perspective (use basic if none specified)
+    perspective_name = config.perspective or "basic"
+    try:
+        perspective = load_perspective(perspective_name)
+        logger.debug(f"Loaded perspective: {perspective.name}")
+    except Exception as e:
+        logger.error(f"Failed to load perspective: {e}")
+        return
+
+    # Create and run perspective engine
+    engine = PerspectiveEngine(perspective)
+    
     async def run_analysis():
         try:
-            snapshot = await analyzer.get_snapshot()
-            logger.info("System snapshot captured", 
-                       nodes=len(snapshot.nodes),
-                       topics=len(snapshot.topics))
+            # Run perspective pipeline
+            result = await engine.execute({"analyzer": analyzer})
             
-            # TODO: Analyze frequencies and latencies based on filters
+            # Get markdown output
+            if "overview_doc" not in result:
+                logger.error("Perspective did not generate expected output")
+                return
+                
+            # Write output
+            output_dir = Path(config.output_dir or ".")
+            output_dir.mkdir(parents=True, exist_ok=True)
+            
+            output_file = output_dir / f"{perspective.name}.md"
+            with open(output_file, "w") as f:
+                f.write(result["overview_doc"])
+                
+            logger.info(f"Analysis complete. Output written to {output_file}")
             
         except Exception as e:
             logger.error("Analysis failed", error=str(e))

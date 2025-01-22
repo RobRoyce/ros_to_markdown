@@ -1,7 +1,8 @@
-from typing import Optional
 import importlib
-from .interfaces import SystemAnalyzer
+
 from ..config.schema import Config, RosVersion
+from .interfaces import SystemAnalyzer
+
 
 def get_analyzer(config: Config) -> SystemAnalyzer:
     """
@@ -11,6 +12,5 @@ def get_analyzer(config: Config) -> SystemAnalyzer:
         # Dynamically import ROS2 analyzer to avoid rclpy import issues
         ros2_module = importlib.import_module(".ros2", package="ros_to_markdown.analysis")
         return ros2_module.Ros2SystemAnalyzer()
-    else:
-        # Future: Import ROS1 analyzer here
-        raise NotImplementedError("ROS1 support not yet implemented") 
+    # Future: Import ROS1 analyzer here
+    raise NotImplementedError("ROS1 support not yet implemented")

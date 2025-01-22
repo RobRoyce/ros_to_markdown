@@ -2,9 +2,9 @@ import logging
 import sys
 from typing import Any, Optional
 
-import structlog
 from rich.console import Console
 from rich.text import Text
+import structlog
 
 # Create rich console for colored output
 console = Console(file=sys.stderr)

@@ -1,7 +1,8 @@
 from enum import Enum, IntEnum
-from typing import Optional, List
-from pydantic import BaseModel, Field, model_validator
-import os
+from typing import List, Optional
+
+from pydantic import BaseModel, Field
+
 
 class RosVersion(IntEnum):
     """ROS distribution version."""
@@ -34,24 +35,10 @@ class RuntimeConfig(BaseModel):
 
 
 class Config(BaseModel):
-    """Root configuration schema."""
-    ros_version: RosVersion = Field(
-        default=RosVersion.ROS2,
-        description="ROS version to use"
-    )
-    ros_distro: RosDistro = Field(
-        default=RosDistro.HUMBLE,
-        description="ROS distribution to use"
-    )
-    runtime: RuntimeConfig = Field(
-        default_factory=RuntimeConfig,
-        description="Runtime analysis configuration"
-    )
-    output_dir: str = Field(
-        default="./docs",
-        description="Directory to write markdown output"
-    )
-    debug: bool = Field(
-        default=False,
-        description="Enable debug logging"
-    )
+    """Configuration for ros-to-markdown."""
+    ros_distro: RosDistro
+    ros_version: RosVersion
+    output_dir: Optional[str] = None
+    debug: bool = False
+    perspective: Optional[str] = None  # Name of perspective to use
+    runtime: RuntimeConfig = Field(default_factory=RuntimeConfig)

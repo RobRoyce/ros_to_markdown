@@ -1,0 +1,87 @@
+# {{ title }}
+
+Generated at: {{ timestamp }}
+
+## Nodes
+
+{% for node in graph.nodes %}
+### {{ node.name }}
+
+**Namespace**: {{ node.namespace }}
+
+Publishers:
+{% if node.publishers %}
+{% for pub in node.publishers %}
+- {{ pub }}
+{% endfor %}
+{% else %}
+*No publishers*
+{% endif %}
+
+Subscribers:
+{% if node.subscribers %}
+{% for sub in node.subscribers %}
+- {{ sub }}
+{% endfor %}
+{% else %}
+*No subscribers*
+{% endif %}
+
+{% endfor %}
+
+## Topics
+
+{% for topic in graph.topics %}
+### {{ topic.name }}
+
+**Type**: {{ topic.type }}
+
+Publishers:
+{% if topic.publishers %}
+{% for pub in topic.publishers %}
+- {{ pub }}
+{% endfor %}
+{% else %}
+*No publishers*
+{% endif %}
+
+Subscribers:
+{% if topic.subscribers %}
+{% for sub in topic.subscribers %}
+- {{ sub }}
+{% endfor %}
+{% else %}
+*No subscribers*
+{% endif %}
+
+{% endfor %}
+
+## System Graph
+
+```mermaid
+graph TD
+    %% Style definitions
+    classDef node fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef topic fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+
+{% if graph.connections %}
+    %% Nodes and Topics
+    {% for node in graph.nodes %}
+    {{ node.name | replace('/', '_') }}["{{ node.name }}"]:::node
+    {% endfor %}
+    {% for topic in graph.topics %}
+    {{ topic.name | replace('/', '_') }}[["{{ topic.name }}"]]:::topic
+    {% endfor %}
+
+    %% Connections
+    {% for conn in graph.connections %}
+    {% if conn.type == 'publishes' %}
+    {{ conn.from | replace('/', '_') }} --> {{ conn.to | replace('/', '_') }}
+    {% else %}
+    {{ conn.from | replace('/', '_') }} --> {{ conn.to | replace('/', '_') }}
+    {% endif %}
+    {% endfor %}
+{% else %}
+    A[No connections found]
+{% endif %}
+``` 
