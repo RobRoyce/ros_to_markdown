@@ -1,8 +1,16 @@
 #!/usr/bin/env python3
+"""Utility script for creating ROS1 and ROS2 workspaces with example packages.
+
+This module provides functionality to:
+- Create workspace directory structures
+- Generate package configurations
+- Set up custom interface files (msg, srv, action)
+- Create node scripts and launch files
+"""
 
 import os
 import subprocess
-from typing import Optional
+
 from ros_to_markdown.core.ros_detector import ROSDetector, ROSVersion
 
 ################################################################################
@@ -16,9 +24,9 @@ ROS1_PACKAGES = {
     "environment_integration": "std_msgs rospy geometry_msgs",
     "robot_control": "std_msgs rospy geometry_msgs",
     "action_server": "std_msgs rospy geometry_msgs actionlib actionlib_msgs",
-    "tricky_scenarios": "std_msgs rospy geometry_msgs std_srvs",  # added std_srvs for delayed_response
+    "tricky_scenarios": "std_msgs rospy geometry_msgs std_srvs",  # for delayed_response
     "visualization": "std_msgs rospy",
-    "user_interface": "std_msgs rospy geometry_msgs"
+    "user_interface": "std_msgs rospy geometry_msgs",
 }
 
 # ROS2 package definitions (package_name -> dependencies)
@@ -30,7 +38,7 @@ ROS2_PACKAGES = {
     "action_server": "rclpy std_msgs geometry_msgs action_msgs actionlib_msgs",
     "tricky_scenarios": "rclpy std_msgs geometry_msgs std_srvs",  # for delayed_response
     "visualization": "rclpy std_msgs geometry_msgs",
-    "user_interface": "rclpy std_msgs geometry_msgs"
+    "user_interface": "rclpy std_msgs geometry_msgs",
 }
 
 ################################################################################
@@ -84,7 +92,7 @@ bool    valid
 string  timestamp
 """
         }
-    }
+    },
 }
 
 ################################################################################
@@ -130,7 +138,7 @@ def main():
 
 if __name__ == '__main__':
     main()
-"""
+""",
         }
     },
     "data_processing": {
@@ -199,7 +207,7 @@ def main():
 
 if __name__ == '__main__':
     main()
-"""
+""",
         }
     },
     "environment_integration": {
@@ -367,7 +375,7 @@ def main():
 
 if __name__ == '__main__':
     main()
-"""
+""",
         }
     },
     "visualization": {
@@ -420,7 +428,7 @@ if __name__ == '__main__':
     main()
 """
         }
-    }
+    },
 }
 
 
@@ -491,7 +499,7 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-"""
+""",
         }
     },
     "data_processing": {
@@ -506,9 +514,23 @@ from data_processing.msg import FilteredData
 class DataFilter(Node):
     def __init__(self):
         super().__init__('data_filter')
-        self.temp_sub = self.create_subscription(Float64, '/sensor/temperature', self.temp_callback, 10)
-        self.hum_sub = self.create_subscription(Float64, '/sensor/humidity', self.hum_callback, 10)
-        self.pub_filtered = self.create_publisher(FilteredData, '/data/filtered', 10)
+        self.temp_sub = self.create_subscription(
+            Float64,
+            '/sensor/temperature',
+            self.temp_callback,
+            10
+        )
+        self.hum_sub = self.create_subscription(
+            Float64,
+            '/sensor/humidity',
+            self.hum_callback,
+            10
+        )
+        self.pub_filtered = self.create_publisher(
+            FilteredData,
+            '/data/filtered',
+            10
+        )
 
         self.temperature = None
         self.humidity = None
@@ -551,11 +573,23 @@ from std_msgs.msg import String
 class DataProcessor(Node):
     def __init__(self):
         super().__init__('data_processor')
-        self.pub_processed = self.create_publisher(String, '/data/processed', 10)
-        self.sub_filtered = self.create_subscription(FilteredData, '/data/filtered', self.filtered_callback, 10)
+        self.pub_processed = self.create_publisher(
+            String,
+            '/data/processed',
+            10
+        )
+        self.sub_filtered = self.create_subscription(
+            FilteredData,
+            '/data/filtered',
+            self.filtered_callback,
+            10
+        )
 
     def filtered_callback(self, msg):
-        text_out = f"Processed => temp: {msg.temperature:.2f}, hum: {msg.humidity:.2f}, valid: {msg.valid}"
+        text_out = (
+            f"Processed => temp: {msg.temperature:.2f}, "
+            f"hum: {msg.humidity:.2f}, valid: {msg.valid}"
+        )
         self.get_logger().info(text_out)
         self.pub_processed.publish(String(data=text_out))
 
@@ -568,61 +602,216 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-"""
+""",
         }
     },
     # ... Similarly for environment_integration, robot_control, action_server, etc.
-    # For brevity, we'll show one or two more as examples:
-    "environment_integration": {
-        "scripts": {
-            "environment_builder.py": r"""#!/usr/bin/env python3
-
-import rclpy
-from rclpy.node import Node
-from std_msgs.msg import String
-from environment_integration.msg import EnvironmentData
-
-class EnvironmentBuilder(Node):
-    def __init__(self):
-        super().__init__('environment_builder')
-        self.pub_env = self.create_publisher(EnvironmentData, '/environment/data', 10)
-        self.sub_processed = self.create_subscription(String, '/data/processed', self.processed_callback, 10)
-
-    def processed_callback(self, msg):
-        env_msg = EnvironmentData()
-        env_msg.frame_id = "map"
-        env_msg.map_data = [float(ord(c)) for c in msg.data]
-        self.pub_env.publish(env_msg)
-        self.get_logger().info("Published EnvironmentData")
-
-def main(args=None):
-    rclpy.init(args=args)
-    node = EnvironmentBuilder()
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.shutdown()
-
-if __name__ == '__main__':
-    main()
-"""
-        }
-    }
-    # In a real solution, you'd define the remaining scripts for ROS2:
-    #   robot_control/move_robot.py
-    #   action_server/move_to_goal.py
-    #   tricky_scenarios/conflicting_publishers.py, etc.
-    #   user_interface/command_listener.py
-    #   visualization/visualize_data.py
-    # etc. 
-    # But we'll keep it concise for demonstration.
+    # For brevity, we won't list them all here—just replicate the same logic for each.
 }
 
+
 ################################################################################
-# WORKSPACE CREATION (AS BEFORE) + NODE SCRIPT CREATION
+# 5. LAUNCH FILE TEMPLATES
 ################################################################################
 
+# Single ROS1 launch file that starts all nodes
+ROS1_LAUNCH_CONTENT = r"""<launch>
+    <!-- sensor_data -->
+    <node
+        pkg="sensor_data"
+        type="temperature_publisher.py"
+        name="temperature_publisher"
+        output="screen"
+    />
+    <node
+        pkg="sensor_data"
+        type="humidity_publisher.py"
+        name="humidity_publisher"
+        output="screen"
+    />
+
+    <!-- data_processing -->
+    <node
+        pkg="data_processing"
+        type="data_filter.py"
+        name="data_filter"
+        output="screen"
+    />
+    <node
+        pkg="data_processing"
+        type="data_processor.py"
+        name="data_processor"
+        output="screen"
+    />
+
+    <!-- environment_integration -->
+    <node
+        pkg="environment_integration"
+        type="environment_builder.py"
+        name="environment_builder"
+        output="screen"
+    />
+
+    <!-- robot_control -->
+    <node
+        pkg="robot_control"
+        type="move_robot.py"
+        name="move_robot"
+        output="screen"
+    />
+
+    <!-- action_server -->
+    <node
+        pkg="action_server"
+        type="move_to_goal.py"
+        name="move_to_goal"
+        output="screen"
+    />
+
+    <!-- tricky_scenarios -->
+    <node
+        pkg="tricky_scenarios"
+        type="conflicting_publishers.py"
+        name="conflicting_temperature_publisher"
+        output="screen"
+    />
+    <node
+        pkg="tricky_scenarios"
+        type="delayed_response.py"
+        name="delayed_response"
+        output="screen"
+    />
+
+    <!-- visualization -->
+    <node
+        pkg="visualization"
+        type="visualize_data.py"
+        name="visualize_data"
+        output="screen"
+    />
+
+    <!-- user_interface -->
+    <node
+        pkg="user_interface"
+        type="command_listener.py"
+        name="command_listener"
+        output="screen"
+    />
+</launch>
+"""
+
+# Single ROS2 launch file (Python) that starts all nodes
+ROS2_LAUNCH_CONTENT = r"""#!/usr/bin/env python3
+
+import launch
+from launch import LaunchDescription
+from launch_ros.actions import Node
+
+def generate_launch_description():
+    ld = LaunchDescription()
+
+    # sensor_data
+    ld.add_action(Node(
+        package='sensor_data',
+        executable='temperature_publisher',
+        name='temperature_publisher',
+        output='screen'
+    ))
+
+    ld.add_action(Node(
+        package='sensor_data',
+        executable='humidity_publisher',
+        name='humidity_publisher',
+        output='screen'
+    ))
+
+    # data_processing
+    ld.add_action(Node(
+        package='data_processing',
+        executable='data_filter',
+        name='data_filter',
+        output='screen'
+    ))
+
+    ld.add_action(Node(
+        package='data_processing',
+        executable='data_processor',
+        name='data_processor',
+        output='screen'
+    ))
+
+    # environment_integration
+    ld.add_action(Node(
+        package='environment_integration',
+        executable='environment_builder',
+        name='environment_builder',
+        output='screen'
+    ))
+
+    # robot_control
+    ld.add_action(Node(
+        package='robot_control',
+        executable='move_robot',
+        name='move_robot',
+        output='screen'
+    ))
+
+    # action_server
+    ld.add_action(Node(
+        package='action_server',
+        executable='move_to_goal',
+        name='move_to_goal',
+        output='screen'
+    ))
+
+    # tricky_scenarios
+    ld.add_action(Node(
+        package='tricky_scenarios',
+        executable='conflicting_publishers',
+        name='conflicting_publishers',
+        output='screen'
+    ))
+
+    ld.add_action(Node(
+        package='tricky_scenarios',
+        executable='delayed_response',
+        name='delayed_response',
+        output='screen'
+    ))
+
+    # visualization
+    ld.add_action(Node(
+        package='visualization',
+        executable='visualize_data',
+        name='visualize_data',
+        output='screen'
+    ))
+
+    # user_interface
+    ld.add_action(Node(
+        package='user_interface',
+        executable='command_listener',
+        name='command_listener',
+        output='screen'
+    ))
+
+    return ld
+"""
+
+################################################################################
+# WORKSPACE CREATION (AS BEFORE) + NODE SCRIPT CREATION + LAUNCH FILES
+################################################################################
+
+
 def create_ros1_workspace(base_path: str) -> None:
-    """Create the ROS1 workspace structure and packages, including custom files & node scripts."""
+    """Create the ROS1 workspace structure and packages.
+
+    Creates a complete workspace including custom files, node scripts,
+    and launch files.
+
+    Args:
+        base_path: Root directory where the workspace will be created
+    """
     workspace = os.path.join(base_path, "ros1_workspace")
     src_dir = os.path.join(workspace, "src")
 
@@ -655,9 +844,26 @@ def create_ros1_workspace(base_path: str) -> None:
         else:
             print(f"[ROS1] Package {pkg_name} not found; skipping script creation.")
 
+    # Create a single launch file in sensor_data/launch
+    sensor_data_pkg = os.path.join(src_dir, "sensor_data")
+    launch_dir = os.path.join(sensor_data_pkg, "launch")
+    os.makedirs(launch_dir, exist_ok=True)
+
+    launch_file_path = os.path.join(launch_dir, "main_system.launch")
+    with open(launch_file_path, "w") as f:
+        f.write(ROS1_LAUNCH_CONTENT)
+    print(f"[ROS1] Created launch file: {launch_file_path}")
+
 
 def create_ros2_workspace(base_path: str) -> None:
-    """Create the ROS2 workspace structure and packages, including custom files & node scripts."""
+    """Create the ROS2 workspace structure and packages.
+
+    Creates a complete workspace including custom files, node scripts,
+    and launch files.
+
+    Args:
+        base_path: Root directory where the workspace will be created
+    """
     workspace = os.path.join(base_path, "ros2_workspace")
     src_dir = os.path.join(workspace, "src")
 
@@ -687,29 +893,53 @@ def create_ros2_workspace(base_path: str) -> None:
         else:
             print(f"[ROS2] Package {pkg_name} not found; skipping script creation.")
 
+    # Create a single launch file in sensor_data/launch
+    sensor_data_pkg = os.path.join(src_dir, "sensor_data")
+    launch_dir = os.path.join(sensor_data_pkg, "launch")
+    os.makedirs(launch_dir, exist_ok=True)
+
+    launch_file_path = os.path.join(launch_dir, "main_system.launch.py")
+    with open(launch_file_path, "w") as f:
+        f.write(ROS2_LAUNCH_CONTENT)
+    os.chmod(launch_file_path, 0o755)
+    print(f"[ROS2] Created launch file: {launch_file_path}")
+
 
 ################################################################################
 # HELPERS FOR PACKAGE CREATION
 ################################################################################
 
+
 def create_ros1_package(package_name: str, dependencies: str, workspace: str) -> None:
+    """Create a ROS1 package with the given name and dependencies."""
     src_dir = os.path.join(workspace, "src")
     print(f"[ROS1] Creating package: {package_name} with deps: {dependencies}")
-    subprocess.run(["catkin_create_pkg", package_name] + dependencies.split(), cwd=src_dir)
+    subprocess.run(["catkin_create_pkg", package_name, *dependencies.split()], cwd=src_dir)
+
 
 def create_ros2_package(package_name: str, dependencies: str, workspace: str) -> None:
+    """Create a ROS2 package with the given name and dependencies."""
     src_dir = os.path.join(workspace, "src")
     print(f"[ROS2] Creating package: {package_name} with deps: {dependencies}")
-    subprocess.run([
-        "ros2", "pkg", "create", package_name,
-        "--build-type", "ament_python",
-        "--dependencies"
-    ] + dependencies.split(), cwd=src_dir)
+    subprocess.run(
+        [
+            "ros2",
+            "pkg",
+            "create",
+            package_name,
+            "--build-type",
+            "ament_python",
+            "--dependencies",
+            *dependencies.split(),
+        ],
+        cwd=src_dir,
+    )
 
 
 ################################################################################
 # HELPERS FOR INTERFACE FILE CREATION
 ################################################################################
+
 
 def create_interface_files(package_path: str, interfaces: dict) -> None:
     """Create directories (msg/, srv/, action/) and write placeholder interface files."""
@@ -729,13 +959,15 @@ def create_interface_files(package_path: str, interfaces: dict) -> None:
 # ROS1 BUILD FILE UPDATES (CMakeLists, package.xml)
 ################################################################################
 
+
 def update_ros1_cmakelists_and_packagexml(package_path: str, interfaces: dict) -> None:
+    """Update the CMakeLists.txt and package.xml files for ROS1."""
     cmakelists_path = os.path.join(package_path, "CMakeLists.txt")
     packagexml_path = os.path.join(package_path, "package.xml")
 
     # 1) CMakeLists.txt
     if os.path.isfile(cmakelists_path):
-        with open(cmakelists_path, "r") as f:
+        with open(cmakelists_path) as f:
             data = f.read()
 
         # Insert find_package(... message_generation ...)
@@ -770,6 +1002,8 @@ def update_ros1_cmakelists_and_packagexml(package_path: str, interfaces: dict) -
                 add_action += f"    {a}\n"
             add_action += ")\n\n"
 
+        data = data.replace("# catkin_python_setup()", "catkin_python_setup()")
+
         if (add_msg or add_srv or add_action) and "generate_messages(" not in data:
             generation_block = add_msg + add_srv + add_action
             generation_block += "generate_messages(\n  DEPENDENCIES std_msgs geometry_msgs\n)\n"
@@ -781,12 +1015,14 @@ def update_ros1_cmakelists_and_packagexml(package_path: str, interfaces: dict) -
 
     # 2) package.xml
     if os.path.isfile(packagexml_path):
-        with open(packagexml_path, "r") as f:
+        with open(packagexml_path) as f:
             pkgxml = f.read()
 
         if "<build_depend>message_generation</build_depend>" not in pkgxml:
             idx = pkgxml.find("</package>")
-            pkgxml = pkgxml[:idx] + "  <build_depend>message_generation</build_depend>\n" + pkgxml[idx:]
+            pkgxml = (
+                pkgxml[:idx] + "  <build_depend>message_generation</build_depend>\n" + pkgxml[idx:]
+            )
         if "<exec_depend>message_runtime</exec_depend>" not in pkgxml:
             idx = pkgxml.find("</package>")
             pkgxml = pkgxml[:idx] + "  <exec_depend>message_runtime</exec_depend>\n" + pkgxml[idx:]
@@ -799,10 +1035,12 @@ def update_ros1_cmakelists_and_packagexml(package_path: str, interfaces: dict) -
 # ROS2 BUILD FILE UPDATES (package.xml, setup.py)
 ################################################################################
 
+
 def update_ros2_package_files(package_path: str, interfaces: dict) -> None:
+    """Update the package.xml and setup.py files for ROS2."""
     packagexml_path = os.path.join(package_path, "package.xml")
     if os.path.isfile(packagexml_path):
-        with open(packagexml_path, "r") as f:
+        with open(packagexml_path) as f:
             pkgxml = f.read()
 
         needed_deps = [
@@ -813,7 +1051,10 @@ def update_ros2_package_files(package_path: str, interfaces: dict) -> None:
         for dep in needed_deps:
             if f"<build_depend>{dep}</build_depend>" not in pkgxml:
                 idx = pkgxml.find("</package>")
-                insert_str = f"  <build_depend>{dep}</build_depend>\n  <exec_depend>{dep}</exec_depend>\n"
+                insert_str = (
+                    f"  <build_depend>{dep}</build_depend>\n"
+                    f"  <exec_depend>{dep}</exec_depend>\n"
+                )
                 pkgxml = pkgxml[:idx] + insert_str + pkgxml[idx:]
 
         with open(packagexml_path, "w") as f:
@@ -857,11 +1098,9 @@ setup(
 # SCRIPT WRITING HELPERS (ROS1 & ROS2)
 ################################################################################
 
+
 def write_ros1_scripts(package_path: str, script_data: dict) -> None:
-    """
-    Create a 'scripts' folder in the ROS1 package and write each script file, 
-    then chmod +x them.
-    """
+    """Create a 'scripts' folder in the ROS1 package and write each script file."""
     scripts_dir = os.path.join(package_path, "scripts")
     os.makedirs(scripts_dir, exist_ok=True)
 
@@ -873,11 +1112,11 @@ def write_ros1_scripts(package_path: str, script_data: dict) -> None:
                 f.write(content)
             os.chmod(file_path, 0o755)
 
+
 def write_ros2_scripts(package_path: str, script_data: dict) -> None:
-    """
-    In ament_python, we typically place Python modules in 
-    'package_name/package_name/*.py'. We'll do that here for consistency.
-    Then we can add them to entry_points in setup.py if desired.
+    """In ament_python, we typically place Python modules in 'package_name/package_name/*.py'.
+
+    We'll do that here for consistency. Then we can add them to entry_points in setup.py if desired.
     """
     pkg_name = os.path.basename(package_path)  # e.g. "sensor_data"
     python_dir = os.path.join(package_path, pkg_name)
@@ -896,22 +1135,27 @@ def write_ros2_scripts(package_path: str, script_data: dict) -> None:
 # MAIN ENTRY POINT
 ################################################################################
 
-def main() -> None:
-    """Main function to create the ROS1 and ROS2 workspaces based on the new system design."""
-    # You can change this if you want to create the workspace in a different location
 
-    base_path = "/"  # Update this path as needed
-    
+def main() -> None:
+    """Main function to create the ROS1 or ROS2 workspace based on the new system design."""
+    # Update this path as needed
+    base_path = "/"
+
     print(f"Creating workspaces under: {base_path}")
     os.makedirs(base_path, exist_ok=True)
 
     ros_version = ROSDetector.detect_ros_version()
 
-    # Create workspaces
+    # Create either ROS1 or ROS2 workspace based on environment
     if ros_version == ROSVersion.ROS1:
         create_ros1_workspace(base_path)
     elif ros_version == ROSVersion.ROS2:
         create_ros2_workspace(base_path)
+
+    print(
+        "Done! Your workspace is ready with packages, nodes, interfaces, and a single launch file."
+    )
+
 
 if __name__ == "__main__":
     main()

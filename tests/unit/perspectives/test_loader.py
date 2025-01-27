@@ -1,18 +1,21 @@
 """Test perspective loading functionality."""
-import os
-import pytest
+
 from pathlib import Path
+from typing import Any
 
 from ros_to_markdown.perspectives.loader import load_perspective
 from ros_to_markdown.perspectives.models import Perspective
 
+import pytest
+import yaml
 
-def test_load_builtin_perspective(tmp_path, monkeypatch):
+
+def test_load_builtin_perspective(tmp_path: Path, monkeypatch: Any) -> None:
     """Test loading a builtin perspective."""
     # Create mock builtin perspective
     builtin_dir = tmp_path / "definitions"
     builtin_dir.mkdir(parents=True)
-    
+
     perspective_file = builtin_dir / "basic.yaml"
     perspective_file.write_text("""
 name: basic
@@ -39,26 +42,26 @@ compatibility:
   max_version: "2.0"
   deprecated_features: []
     """)
-    
+
     # Mock the builtin directory path
-    def mock_get_builtin_dir(*args):
+    def mock_get_builtin_dir(*args: Any) -> Path:
         return tmp_path
+
     monkeypatch.setattr(
-        "ros_to_markdown.perspectives.loader.Path.parent",
-        property(lambda _: tmp_path)
+        "ros_to_markdown.perspectives.loader.Path.parent", property(lambda _: tmp_path)
     )
-    
+
     perspective = load_perspective("basic")
     assert isinstance(perspective, Perspective)
     assert perspective.name == "basic"
 
 
-def test_load_user_perspective(tmp_path):
+def test_load_user_perspective(tmp_path: Path) -> None:
     """Test loading a user-defined perspective."""
     # Create mock user perspective
     user_dir = tmp_path / "user_perspectives"
     user_dir.mkdir()
-    
+
     perspective_file = user_dir / "custom.yaml"
     perspective_file.write_text("""
 name: custom
@@ -85,7 +88,7 @@ compatibility:
   max_version: "2.0"
   deprecated_features: []
     """)
-    
+
     with pytest.MonkeyPatch.context() as mp:
         mp.setenv("ROS_TO_MARKDOWN_PERSPECTIVES", str(user_dir))
         perspective = load_perspective("custom")
@@ -93,26 +96,26 @@ compatibility:
         assert perspective.name == "custom"
 
 
-def test_perspective_not_found():
+def test_perspective_not_found() -> None:
     """Test error handling when perspective is not found."""
     with pytest.raises(ValueError, match="Perspective not found"):
         load_perspective("nonexistent")
 
 
-def test_invalid_perspective(tmp_path, monkeypatch):
-    """Test error handling for invalid perspective definition."""
-    # Create invalid perspective file
+def test_invalid_perspective(tmp_path: Path, monkeypatch: Any) -> None:
+    """Test loading an invalid perspective."""
+    # Create a temporary builtin directory
     builtin_dir = tmp_path / "definitions"
-    builtin_dir.mkdir(parents=True)
-    
+    builtin_dir.mkdir()
+
+    # Create an invalid perspective file
     perspective_file = builtin_dir / "invalid.yaml"
-    perspective_file.write_text("invalid: yaml: content")
-    
+    perspective_file.write_text("invalid: yaml: : content")
+
     # Mock the builtin directory path
     monkeypatch.setattr(
-        "ros_to_markdown.perspectives.loader.Path.parent",
-        property(lambda _: tmp_path)
+        "ros_to_markdown.perspectives.loader.Path.parent", property(lambda _: tmp_path)
     )
-    
-    with pytest.raises(Exception):
-        load_perspective("invalid") 
+
+    with pytest.raises((ValueError, yaml.scanner.ScannerError)):
+        load_perspective("invalid")

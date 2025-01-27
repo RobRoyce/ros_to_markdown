@@ -7,27 +7,33 @@ from typing import Dict, List, Optional
 @dataclass
 class NodeInfo:
     """Basic information about a ROS node."""
+
     name: str
     namespace: str
     publishers: List[str]  # Topic names
     subscribers: List[str]  # Topic names
 
+
 @dataclass
 class TopicInfo:
     """Basic information about a ROS topic."""
+
     name: str
     type: str
     publishers: List[str]  # Node names
     subscribers: List[str]  # Node names
     frequency: Optional[float] = None  # Hz
-    latency: Optional[float] = None   # milliseconds
+    latency: Optional[float] = None  # milliseconds
+
 
 @dataclass
 class SystemSnapshot:
     """Snapshot of system state at a point in time."""
+
     timestamp: datetime
     nodes: Dict[str, NodeInfo]
     topics: Dict[str, TopicInfo]
+
 
 class SystemAnalyzer(ABC):
     """Base interface for ROS system analyzers."""

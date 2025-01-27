@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 
 class StageType(str, Enum):
     """Types of pipeline stages."""
+
     COLLECT = "collect"
     TRANSFORM = "transform"
     ANALYZE = "analyze"
@@ -14,6 +15,7 @@ class StageType(str, Enum):
 
 class PipelineInput(BaseModel):
     """Input specification for a pipeline stage."""
+
     source: str
     required: bool = True
     transform: Optional[str] = None
@@ -21,6 +23,7 @@ class PipelineInput(BaseModel):
 
 class PipelineStage(BaseModel):
     """Base configuration for a pipeline stage."""
+
     type: str
     name: str = Field(..., description="Unique name for this stage")
     inputs: List[Union[str, PipelineInput]]
@@ -30,6 +33,7 @@ class PipelineStage(BaseModel):
 
 class PipelineConfig(BaseModel):
     """Pipeline configuration within a perspective."""
+
     collect: List[PipelineStage]
     transform: Optional[List[PipelineStage]] = None
     analyze: Optional[List[PipelineStage]] = None
@@ -38,6 +42,7 @@ class PipelineConfig(BaseModel):
 
 class CompatibilityConfig(BaseModel):
     """Version compatibility configuration."""
+
     min_version: str
     max_version: str
     deprecated_features: List[str] = Field(default_factory=list)
@@ -45,6 +50,7 @@ class CompatibilityConfig(BaseModel):
 
 class Perspective(BaseModel):
     """Complete perspective definition."""
+
     name: str
     version: str
     description: str

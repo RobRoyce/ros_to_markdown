@@ -8,7 +8,7 @@ from .registry import get_stage_implementation
 class PipelineContext:
     """Holds data and state during pipeline execution."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.data: Dict[str, Any] = {}
         self.logger = get_logger(__name__)
 
@@ -16,7 +16,7 @@ class PipelineContext:
         """Get data by key."""
         return self.data.get(key)
 
-    def put(self, key: str, value: Any):
+    def put(self, key: str, value: Any) -> None:
         """Store data by key."""
         self.data[key] = value
 
@@ -24,7 +24,7 @@ class PipelineContext:
 class PerspectiveEngine:
     """Executes perspectives on collected data."""
 
-    def __init__(self, perspective: Perspective):
+    def __init__(self, perspective: Perspective) -> None:
         self.perspective = perspective
         self.logger = get_logger(__name__)
 
@@ -45,7 +45,7 @@ class PerspectiveEngine:
 
         return context.data
 
-    async def _execute_stage(self, stage: PipelineStage, context: PipelineContext):
+    async def _execute_stage(self, stage: PipelineStage, context: PipelineContext) -> None:
         """Execute a single pipeline stage."""
         try:
             # Get stage implementation

@@ -11,7 +11,7 @@ from ..stage import PipelineStageImpl
 class MarkdownRendererStage(PipelineStageImpl):
     """Renders system information as markdown."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         # Set up Jinja environment
         template_dir = Path(__file__).parent.parent / "templates"
@@ -19,7 +19,7 @@ class MarkdownRendererStage(PipelineStageImpl):
             loader=jinja2.FileSystemLoader(str(template_dir)),
             autoescape=False,
             trim_blocks=True,
-            lstrip_blocks=True
+            lstrip_blocks=True,
         )
 
     async def execute(self, inputs: Dict[str, Any], config: Dict) -> str:
@@ -32,7 +32,5 @@ class MarkdownRendererStage(PipelineStageImpl):
 
         # Render template
         return template.render(
-            graph=graph,
-            title="ROS System Overview",
-            timestamp=graph.get("timestamp")
+            graph=graph, title="ROS System Overview", timestamp=graph.get("timestamp")
         )

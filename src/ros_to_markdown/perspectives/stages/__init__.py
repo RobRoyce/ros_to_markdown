@@ -6,4 +6,4 @@ from .render import MarkdownRendererStage
 from .transform import GraphBuilderStage
 
 # These imports register the stages with the registry
-__all__ = ['SystemSnapshotStage', 'GraphBuilderStage', 'MarkdownRendererStage']
+__all__ = ["SystemSnapshotStage", "GraphBuilderStage", "MarkdownRendererStage"]

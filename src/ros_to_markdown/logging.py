@@ -77,7 +77,7 @@ def setup_logging(debug: bool = False) -> None:
     )
 
 
-def get_logger(name: Optional[str] = None) -> structlog.stdlib.BoundLogger:
+def get_logger(name: Optional[str] = None) -> Any:
     """Get a logger instance with optional name binding."""
     logger = structlog.get_logger(name)
     return logger.bind(module=name) if name else logger
@@ -85,14 +85,16 @@ def get_logger(name: Optional[str] = None) -> structlog.stdlib.BoundLogger:
 
 class LogContext:
     """Context manager for temporary log context."""
+
     def __init__(self, **kwargs: Any):
         self.logger = get_logger()
         self.kwargs = kwargs
         self.token: Optional[Any] = None
 
-    def __enter__(self) -> structlog.stdlib.BoundLogger:
+    def __enter__(self) -> Any:
         self.token = structlog.contextvars.bind_contextvars(**self.kwargs)
         return self.logger
 
     def __exit__(self, *args: Any) -> None:
-        structlog.contextvars.unbind_contextvars(self.token)
+        if self.token:
+            structlog.contextvars.unbind_contextvars(self.token)
