@@ -90,7 +90,7 @@ exclude = [
 ]
 
 [[tool.mypy.overrides]]
-module = ["rclpy.*", "rospy.*", "pydantic.*", "structlog.*"]
+module = ["rclpy.*", "rospy.*", "rostopic.*", "pydantic.*", "structlog.*", "rosgraph.*"]
 ignore_missing_imports = true
 ################################################################################
 

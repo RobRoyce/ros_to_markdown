@@ -1,29 +1,50 @@
+#!/usr/bin/env python3
 import asyncio
+import logging
 import os
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from ros_to_markdown.analysis.factory import AnalyzerInitError, get_analyzer
+from ros_to_markdown.config.environment import get_env_config
+from ros_to_markdown.config.schema import Config, RosDistro, RosVersion
+from ros_to_markdown.logging import get_logger, setup_logging
+from ros_to_markdown.perspectives.engine import PerspectiveEngine
+from ros_to_markdown.perspectives.loader import load_perspective
+
 import click
 
-from .analysis.factory import get_analyzer
-from .config.environment import get_env_config
-from .config.schema import Config, RosDistro, RosVersion
-from .logging import get_logger, setup_logging
-from .perspectives.engine import PerspectiveEngine
-from .perspectives.loader import load_perspective
+# Configure logging before any ROS imports
+logging.getLogger("rosout").setLevel(logging.ERROR)
+logging.getLogger("rospy").setLevel(logging.ERROR)
+os.environ["ROS_PYTHON_LOG_CONFIG_FILE"] = ""
+os.environ["ROSCONSOLE_CONFIG_FILE"] = ""
+os.environ["ROSCONSOLE_STDOUT_LINE_BUFFERED"] = "0"
+
+# Conditionally import ROS modules based on ROS_VERSION
+ros_version = int(os.getenv("ROS_VERSION", "2"))
+if ros_version == 1:
+    try:
+        import rospy
+
+        rospy.core.configure_logging = lambda *args, **kwargs: None
+    except ImportError:
+        pass  # ROS1 not installed, that's ok
+
+logger = get_logger(__name__)
 
 
 def get_config(cli_config: Optional[dict] = None) -> Config:
     """
     Get configuration following precedence: CLI > ENV > defaults.
     """
-    logger = get_logger(__name__)
-    ros_distro = os.getenv("ROS_DISTRO", "humble")
-    ros_version = int(os.getenv("ROS_VERSION", "2"))
+    logger.debug("Getting configuration", cli_config=cli_config)
 
     # Convert to enum values
-    ros_distro = RosDistro(ros_distro)
-    ros_version = RosVersion(ros_version)
+    ros_distro = RosDistro(os.getenv("ROS_DISTRO", "humble"))
+    ros_version = RosVersion(int(os.getenv("ROS_VERSION", "2")))
+
+    logger.info("ROS configuration", ros_distro=ros_distro, ros_version=ros_version)
 
     config = Config(ros_distro=ros_distro, ros_version=ros_version)  # Start with defaults
 
@@ -55,7 +76,7 @@ def cli(
     """ROS to Markdown - Generate markdown documentation from ROS systems."""
     # Initialize logging first
     setup_logging(debug=debug if debug is not None else False)
-    logger = get_logger(__name__)
+    logger.debug("CLI startup", output_dir=output_dir, debug=debug, perspective=perspective)
 
     cli_config: Dict[str, Any] = {}
     if output_dir:
@@ -81,7 +102,12 @@ def runtime(
     topic_filter: tuple,
 ) -> None:
     """Analyze a running ROS system."""
-    logger = get_logger(__name__)
+    logger.debug(
+        "Runtime command start",
+        namespace=namespace,
+        node_filter=node_filter,
+        topic_filter=topic_filter,
+    )
 
     if namespace:
         config.runtime.namespace = namespace
@@ -98,24 +124,34 @@ def runtime(
     )
 
     # Initialize analyzer
-    analyzer = get_analyzer(config)
+    logger.debug("Creating analyzer")
+    try:
+        analyzer = get_analyzer(config)
+        logger.info("Analyzer initialized", type=type(analyzer).__name__)
+    except AnalyzerInitError as e:
+        logger.error("Failed to initialize analyzer", error=str(e))
+        raise click.ClickException(str(e)) from e
 
     # Load perspective (use basic if none specified)
     perspective_name = config.perspective or "basic"
     try:
+        logger.debug("Loading perspective", name=perspective_name)
         perspective = load_perspective(perspective_name)
-        logger.debug(f"Loaded perspective: {perspective.name}")
+        logger.debug("Loaded perspective", name=perspective.name)
     except Exception as e:
-        logger.error(f"Failed to load perspective: {e}")
+        logger.error("Failed to load perspective", error=str(e))
         return
 
     # Create and run perspective engine
+    logger.debug("Creating perspective engine")
     engine = PerspectiveEngine(perspective)
 
     async def run_analysis() -> None:
         try:
+            logger.debug("Starting analysis execution")
             # Run perspective pipeline
             result = await engine.execute({"analyzer": analyzer})
+            logger.debug("Analysis execution complete")
 
             # Get markdown output
             if "overview_doc" not in result:
@@ -127,14 +163,17 @@ def runtime(
             output_dir.mkdir(parents=True, exist_ok=True)
 
             output_file = output_dir / f"{perspective.name}.md"
+            logger.debug("Writing output", file=str(output_file))
             with open(output_file, "w") as f:
                 f.write(result["overview_doc"])
 
-            logger.info(f"Analysis complete. Output written to {output_file}")
+            logger.info("Analysis complete", output_file=str(output_file))
 
         except Exception as e:
             logger.error("Analysis failed", error=str(e))
+            raise RuntimeError("Analysis failed") from e
 
+    logger.debug("Starting analysis run")
     asyncio.run(run_analysis())
 
 
