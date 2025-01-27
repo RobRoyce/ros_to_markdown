@@ -1,6 +1,6 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
-from ...analysis.interfaces import SystemSnapshot
+from ...analysis.interfaces import SystemAnalyzer, SystemSnapshot
 from ..registry import StageRegistry
 from ..stage import PipelineStageImpl
 
@@ -10,7 +10,7 @@ class SystemSnapshotStage(PipelineStageImpl):
     """Collects system snapshot using analyzer."""
 
     async def execute(self, inputs: Dict[str, Any], config: Dict) -> SystemSnapshot:
-        analyzer = inputs.get("analyzer")
+        analyzer: Optional[SystemAnalyzer] = inputs.get("analyzer")
         if not analyzer:
             raise ValueError("Analyzer not provided")
 

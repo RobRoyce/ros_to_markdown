@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
 import time
 from typing import Dict, List
 
@@ -12,11 +12,11 @@ from .interfaces import NodeInfo, SystemAnalyzer, SystemSnapshot, TopicInfo
 class Ros2SystemAnalyzer(SystemAnalyzer):
     """ROS2 implementation of system analyzer."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize ROS2 node for analysis."""
         if not rclpy.ok():
             rclpy.init()
-        self.node = Node('system_analyzer')
+        self.node = Node("system_analyzer")
 
     async def get_snapshot(self) -> SystemSnapshot:
         """Get current system state using ROS2 APIs."""
@@ -45,7 +45,7 @@ class Ros2SystemAnalyzer(SystemAnalyzer):
                             name=topic_name,
                             type=topic_types[0],  # Use first type if multiple
                             publishers=[f"{namespace}/{node_name}"],
-                            subscribers=[]
+                            subscribers=[],
                         )
                     else:
                         topics[topic_name].publishers.append(f"{namespace}/{node_name}")
@@ -58,28 +58,21 @@ class Ros2SystemAnalyzer(SystemAnalyzer):
                             name=topic_name,
                             type=topic_types[0],
                             publishers=[],
-                            subscribers=[f"{namespace}/{node_name}"]
+                            subscribers=[f"{namespace}/{node_name}"],
                         )
                     else:
                         topics[topic_name].subscribers.append(f"{namespace}/{node_name}")
 
                 # Create node info
                 nodes[f"{namespace}/{node_name}"] = NodeInfo(
-                    name=node_name,
-                    namespace=namespace,
-                    publishers=node_pubs,
-                    subscribers=node_subs
+                    name=node_name, namespace=namespace, publishers=node_pubs, subscribers=node_subs
                 )
 
             except Exception as e:
                 self.node.get_logger().warn(f"Error getting info for node {node_name}: {e}")
                 continue
 
-        return SystemSnapshot(
-            timestamp=datetime.now(),
-            nodes=nodes,
-            topics=topics
-        )
+        return SystemSnapshot(timestamp=datetime.now(tz=timezone.utc), nodes=nodes, topics=topics)
 
     async def analyze_frequency(self, topic_name: str, duration: float = 1.0) -> float:
         """Analyze message frequency using ROS2 subscription."""
@@ -94,7 +87,7 @@ class Ros2SystemAnalyzer(SystemAnalyzer):
         msg_count = 0
         start_time = None
 
-        def callback(msg):
+        def callback(msg: object) -> None:
             nonlocal msg_count, start_time
             if start_time is None:
                 start_time = time.time()
@@ -102,7 +95,10 @@ class Ros2SystemAnalyzer(SystemAnalyzer):
 
         # Create subscription
         sub = self.node.create_subscription(
-            msg_type, topic_name, callback, 10  # QoS depth of 10
+            msg_type,
+            topic_name,
+            callback,
+            10,  # QoS depth of 10
         )
 
         # Wait for duration
@@ -128,10 +124,10 @@ class Ros2SystemAnalyzer(SystemAnalyzer):
         """
         # Get topic connecting source and target
         source_pubs = self.node.get_publisher_names_and_types_by_node(
-            source.split('/')[-1], '/'.join(source.split('/')[:-1])
+            source.split("/")[-1], "/".join(source.split("/")[:-1])
         )
         target_subs = self.node.get_subscriber_names_and_types_by_node(
-            target.split('/')[-1], '/'.join(target.split('/')[:-1])
+            target.split("/")[-1], "/".join(target.split("/")[:-1])
         )
 
         # Find common topics
@@ -148,14 +144,17 @@ class Ros2SystemAnalyzer(SystemAnalyzer):
         # Measure message timing
         timestamps: List[float] = []
 
-        def callback(msg):
+        def callback(msg: object) -> None:
             timestamps.append(time.time())
 
         # Subscribe to topic
         topic_info = self.node.get_publishers_info_by_topic(topic_name)
         msg_type = topic_info[0].topic_type
         sub = self.node.create_subscription(
-            msg_type, topic_name, callback, 10  # QoS depth of 10
+            msg_type,
+            topic_name,
+            callback,
+            10,  # QoS depth of 10
         )
 
         # Wait for duration
@@ -174,7 +173,7 @@ class Ros2SystemAnalyzer(SystemAnalyzer):
 
         return latency
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Cleanup ROS2 node."""
         try:
             self.node.destroy_node()

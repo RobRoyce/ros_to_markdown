@@ -1,4 +1,6 @@
 """Test perspective engine execution."""
+
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
 from ros_to_markdown.perspectives.engine import PerspectiveEngine
@@ -8,7 +10,7 @@ import pytest
 
 
 @pytest.fixture
-def mock_stage_impl():
+def mock_stage_impl() -> Any:
     """Create a mock stage implementation."""
     mock = AsyncMock()
     mock.execute = AsyncMock(return_value={"test": "result"})
@@ -16,19 +18,19 @@ def mock_stage_impl():
 
 
 @pytest.fixture
-def mock_registry(monkeypatch, mock_stage_impl):
+def mock_registry(monkeypatch: Any, mock_stage_impl: Any) -> Any:
     """Mock the stage registry."""
-    def mock_get_implementation(stage_type):
+
+    def mock_get_implementation(stage_type: str) -> Any:
         return mock_stage_impl
 
     monkeypatch.setattr(
-        "ros_to_markdown.perspectives.engine.get_stage_implementation",
-        mock_get_implementation
+        "ros_to_markdown.perspectives.engine.get_stage_implementation", mock_get_implementation
     )
     return mock_stage_impl
 
 
-async def test_engine_execution(basic_perspective_dict, mock_registry):
+async def test_engine_execution(basic_perspective_dict: Any, mock_registry: Any) -> None:
     """Test perspective engine executes stages correctly."""
     perspective = Perspective.model_validate(basic_perspective_dict)
     engine = PerspectiveEngine(perspective)
@@ -51,7 +53,7 @@ async def test_engine_execution(basic_perspective_dict, mock_registry):
     assert result["overview_doc"] == {"test": "result"}
 
 
-async def test_engine_missing_input(basic_perspective_dict, mock_registry):
+async def test_engine_missing_input(basic_perspective_dict: Any, mock_registry: Any) -> None:
     """Test engine handles missing inputs correctly."""
     perspective = Perspective.model_validate(basic_perspective_dict)
     engine = PerspectiveEngine(perspective)
@@ -61,7 +63,7 @@ async def test_engine_missing_input(basic_perspective_dict, mock_registry):
         await engine.execute({})
 
 
-async def test_engine_stage_error(basic_perspective_dict, mock_registry):
+async def test_engine_stage_error(basic_perspective_dict: Any, mock_registry: Any) -> None:
     """Test engine handles stage errors correctly."""
     mock_registry.execute.side_effect = ValueError("Stage failed")
 

@@ -1,5 +1,6 @@
 """Test transform stage functionality."""
-from datetime import datetime
+
+from datetime import datetime, timezone
 
 from ros_to_markdown.analysis.interfaces import NodeInfo, SystemSnapshot
 from ros_to_markdown.perspectives.stages.transform import GraphBuilderStage
@@ -33,16 +34,14 @@ async def test_graph_builder_filtering(mock_system_snapshot):
 
     # Test nodes-only
     result = await stage.execute(
-        {"system_state": mock_system_snapshot},
-        {"include_nodes": True, "include_topics": False}
+        {"system_state": mock_system_snapshot}, {"include_nodes": True, "include_topics": False}
     )
     assert len(result["nodes"]) > 0
     assert len(result["topics"]) == 0
 
     # Test topics-only
     result = await stage.execute(
-        {"system_state": mock_system_snapshot},
-        {"include_nodes": False, "include_topics": True}
+        {"system_state": mock_system_snapshot}, {"include_nodes": False, "include_topics": True}
     )
     assert len(result["nodes"]) == 0
     assert len(result["topics"]) > 0
@@ -54,10 +53,7 @@ async def test_graph_builder_name_normalization(mock_system_snapshot):
 
     # Modify snapshot with various name formats
     mock_system_snapshot.nodes["//double/slashed"] = NodeInfo(
-        name="double/slashed",
-        namespace="//",
-        publishers=[],
-        subscribers=[]
+        name="double/slashed", namespace="//", publishers=[], subscribers=[]
     )
 
     result = await stage.execute({"system_state": mock_system_snapshot}, {})
@@ -71,9 +67,7 @@ async def test_graph_builder_empty_snapshot():
     """Test graph builder with empty snapshot."""
     stage = GraphBuilderStage()
     empty_snapshot = SystemSnapshot(
-        timestamp=datetime(2025, 1, 1),
-        nodes={},
-        topics={}
+        timestamp=datetime(2025, 1, 1, tzinfo=timezone.utc), nodes={}, topics={}
     )
 
     result = await stage.execute({"system_state": empty_snapshot}, {})

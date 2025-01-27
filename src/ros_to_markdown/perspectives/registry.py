@@ -1,4 +1,4 @@
-from typing import Dict, Type
+from typing import Callable, Dict, Type
 
 from .stage import PipelineStageImpl
 
@@ -9,11 +9,15 @@ class StageRegistry:
     _stages: Dict[str, Type[PipelineStageImpl]] = {}
 
     @classmethod
-    def register(cls, stage_type: str):
+    def register(
+        cls, stage_type: str
+    ) -> Callable[[Type[PipelineStageImpl]], Type[PipelineStageImpl]]:
         """Decorator to register a stage implementation."""
-        def wrapper(impl_class: Type[PipelineStageImpl]):
+
+        def wrapper(impl_class: Type[PipelineStageImpl]) -> Type[PipelineStageImpl]:
             cls._stages[stage_type] = impl_class
             return impl_class
+
         return wrapper
 
     @classmethod

@@ -10,6 +10,7 @@ from .models import Perspective
 
 logger = get_logger(__name__)
 
+
 def get_builtin_perspective_path(name: str) -> Optional[Path]:
     """Get path to a builtin perspective definition."""
     builtin_dir = Path(__file__).parent / "definitions"
@@ -18,6 +19,7 @@ def get_builtin_perspective_path(name: str) -> Optional[Path]:
     if perspective_path.exists():
         return perspective_path
     return None
+
 
 def load_perspective(name: str) -> Perspective:
     """

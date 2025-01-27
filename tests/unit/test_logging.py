@@ -1,5 +1,7 @@
 """Test logging configuration and utilities."""
+
 import logging
+from typing import Generator
 
 from ros_to_markdown.logging import get_logger, setup_logging
 
@@ -8,7 +10,7 @@ import structlog
 
 
 @pytest.fixture(autouse=True)
-def reset_logging():
+def reset_logging() -> Generator[None, None, None]:
     """Reset logging configuration before each test."""
     logger = logging.getLogger("ros_to_markdown")
     logger.handlers = []  # Clear any existing handlers
@@ -18,7 +20,7 @@ def reset_logging():
     logger.setLevel(logging.NOTSET)
 
 
-def test_setup_logging():
+def test_setup_logging() -> None:
     """Test logging setup."""
     # Test debug mode
     setup_logging(debug=True)
@@ -35,7 +37,7 @@ def test_setup_logging():
     assert "rich" in str(bound_logger._processors[-1])  # Check for rich renderer
 
 
-def test_get_logger():
+def test_get_logger() -> None:
     """Test logger retrieval and configuration."""
     logger = get_logger("test_module")
     assert logger.name == "test_module"  # Test exact name match
@@ -47,7 +49,7 @@ def test_get_logger():
     logger.error("Error message")
 
 
-def test_logger_formatting():
+def test_logger_formatting() -> None:
     """Test log message formatting."""
     logger = get_logger("test")
 

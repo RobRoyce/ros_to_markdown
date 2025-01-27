@@ -1,4 +1,5 @@
 """Integration test configuration."""
+
 import pytest
 
 

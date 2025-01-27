@@ -1,11 +1,14 @@
 """Test environment configuration loading."""
+
+from typing import Any
+
 from ros_to_markdown.config.environment import get_env_config
 from ros_to_markdown.config.schema import Config, RosDistro, RosVersion
 
 import pytest
 
 
-def test_get_env_config_empty(monkeypatch):
+def test_get_env_config_empty(monkeypatch: Any) -> None:
     """Test environment config with no variables set."""
     # Explicitly unset ROS environment variables
     monkeypatch.delenv("ROS_VERSION", raising=False)
@@ -15,7 +18,7 @@ def test_get_env_config_empty(monkeypatch):
     assert config is None
 
 
-def test_get_env_config_basic(monkeypatch):
+def test_get_env_config_basic(monkeypatch: Any) -> None:
     """Test basic environment configuration."""
     monkeypatch.setenv("ROS_VERSION", "2")
     monkeypatch.setenv("ROS_DISTRO", "humble")
@@ -27,7 +30,7 @@ def test_get_env_config_basic(monkeypatch):
     assert config.ros_distro == RosDistro.HUMBLE
 
 
-def test_get_env_config_full(monkeypatch):
+def test_get_env_config_full(monkeypatch: Any) -> None:
     """Test full environment configuration."""
     monkeypatch.setenv("ROS_VERSION", "2")
     monkeypatch.setenv("ROS_DISTRO", "humble")
@@ -37,13 +40,17 @@ def test_get_env_config_full(monkeypatch):
     monkeypatch.setenv("ROS_TO_MARKDOWN_NAMESPACE", "/test")
 
     config = get_env_config()
+
+    if not config:
+        raise ValueError("Config is None")
+
     assert config.output_dir == "/test/output"
     assert config.debug is True
     assert config.perspective == "custom"
     assert config.runtime.namespace == "/test"
 
 
-def test_get_env_config_invalid(monkeypatch):
+def test_get_env_config_invalid(monkeypatch: Any) -> None:
     """Test invalid environment configuration."""
     monkeypatch.setenv("ROS_VERSION", "invalid")
     monkeypatch.setenv("ROS_DISTRO", "humble")

@@ -37,6 +37,8 @@ ENV/
 .ruff_cache/
 .pytest_cache/
 htmlcov/
+.mypy_cache/
+documentation/old/
 
 # ROS
 build/
@@ -47,3 +49,5 @@ logs/
 logs/
 log/
 .venv/
+
+.DS_Store

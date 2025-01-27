@@ -1,7 +1,7 @@
 import asyncio
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, Optional
 
 import click
 
@@ -25,10 +25,7 @@ def get_config(cli_config: Optional[dict] = None) -> Config:
     ros_distro = RosDistro(ros_distro)
     ros_version = RosVersion(ros_version)
 
-    config = Config(
-        ros_distro=ros_distro,
-        ros_version=ros_version
-        )  # Start with defaults
+    config = Config(ros_distro=ros_distro, ros_version=ros_version)  # Start with defaults
 
     # Load from environment
     if env_config := get_env_config():
@@ -45,9 +42,7 @@ def get_config(cli_config: Optional[dict] = None) -> Config:
 
 
 @click.group()
-@click.option(
-    "--output-dir", type=click.Path(), help="Output directory for markdown files"
-)
+@click.option("--output-dir", type=click.Path(), help="Output directory for markdown files")
 @click.option("--debug/--no-debug", default=None, help="Enable debug logging")
 @click.option("--perspective", type=str, help="Analysis perspective to use")
 @click.pass_context
@@ -56,13 +51,13 @@ def cli(
     output_dir: Optional[str],
     debug: Optional[bool],
     perspective: Optional[str],
-):
+) -> None:
     """ROS to Markdown - Generate markdown documentation from ROS systems."""
     # Initialize logging first
     setup_logging(debug=debug if debug is not None else False)
     logger = get_logger(__name__)
 
-    cli_config = {}
+    cli_config: Dict[str, Any] = {}
     if output_dir:
         cli_config["output_dir"] = str(output_dir)
     if debug is not None:
@@ -80,8 +75,11 @@ def cli(
 @click.option("--topic-filter", multiple=True, help="Topic name patterns to include")
 @click.pass_obj
 def runtime(
-    config: Config, namespace: Optional[str], node_filter: tuple, topic_filter: tuple
-):
+    config: Config,
+    namespace: Optional[str],
+    node_filter: tuple,
+    topic_filter: tuple,
+) -> None:
     """Analyze a running ROS system."""
     logger = get_logger(__name__)
 
@@ -114,7 +112,7 @@ def runtime(
     # Create and run perspective engine
     engine = PerspectiveEngine(perspective)
 
-    async def run_analysis():
+    async def run_analysis() -> None:
         try:
             # Run perspective pipeline
             result = await engine.execute({"analyzer": analyzer})
