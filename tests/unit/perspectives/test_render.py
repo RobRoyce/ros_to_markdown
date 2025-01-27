@@ -1,9 +1,9 @@
 """Test render stage functionality."""
-import pytest
-from pathlib import Path
-import jinja2
 
 from ros_to_markdown.perspectives.stages.render import MarkdownRendererStage
+
+import jinja2
+import pytest
 
 
 @pytest.fixture
@@ -35,14 +35,14 @@ async def test_markdown_renderer(mock_graph_data):
     """Test markdown rendering."""
     stage = MarkdownRendererStage()
     result = await stage.execute({"system_graph": mock_graph_data}, {})
-    
+
     # Verify basic content
     assert "# ROS System Overview" in result
     assert "Generated at: 2025-01-01 12:00:00" in result
     assert "/test_node" in result
     assert "/test_topic" in result
     assert "std_msgs/msg/String" in result
-    
+
     # Verify Mermaid graph
     assert "```mermaid" in result
     assert "graph TD" in result
@@ -57,9 +57,9 @@ async def test_markdown_renderer_empty_graph():
         "connections": [],
         "timestamp": "2025-01-01 12:00:00"
     }
-    
+
     result = await stage.execute({"system_graph": empty_graph}, {})
-    assert "No connections found" in result 
+    assert "No connections found" in result
 
 
 async def test_markdown_renderer_custom_template(tmp_path):
@@ -69,12 +69,12 @@ async def test_markdown_renderer_custom_template(tmp_path):
     template_dir.mkdir()
     test_template = template_dir / "test.md.j2"
     test_template.write_text("Test: {{ graph.nodes | length }} nodes")
-    
+
     stage = MarkdownRendererStage()
     stage.env = jinja2.Environment(
         loader=jinja2.FileSystemLoader(str(template_dir))
     )
-    
+
     result = await stage.execute(
         {"system_graph": {"nodes": [{"name": "test"}]}},
         {"template": "test.md.j2"}
@@ -85,9 +85,9 @@ async def test_markdown_renderer_custom_template(tmp_path):
 async def test_markdown_renderer_invalid_template():
     """Test markdown rendering with invalid template."""
     stage = MarkdownRendererStage()
-    
+
     with pytest.raises(jinja2.TemplateNotFound):
         await stage.execute(
             {"system_graph": {}},
             {"template": "nonexistent.md.j2"}
-        ) 
+        )

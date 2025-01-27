@@ -1,10 +1,8 @@
 """Test perspective loading functionality."""
-import os
-import pytest
-from pathlib import Path
-
 from ros_to_markdown.perspectives.loader import load_perspective
 from ros_to_markdown.perspectives.models import Perspective
+
+import pytest
 
 
 def test_load_builtin_perspective(tmp_path, monkeypatch):
@@ -12,7 +10,7 @@ def test_load_builtin_perspective(tmp_path, monkeypatch):
     # Create mock builtin perspective
     builtin_dir = tmp_path / "definitions"
     builtin_dir.mkdir(parents=True)
-    
+
     perspective_file = builtin_dir / "basic.yaml"
     perspective_file.write_text("""
 name: basic
@@ -39,7 +37,7 @@ compatibility:
   max_version: "2.0"
   deprecated_features: []
     """)
-    
+
     # Mock the builtin directory path
     def mock_get_builtin_dir(*args):
         return tmp_path
@@ -47,7 +45,7 @@ compatibility:
         "ros_to_markdown.perspectives.loader.Path.parent",
         property(lambda _: tmp_path)
     )
-    
+
     perspective = load_perspective("basic")
     assert isinstance(perspective, Perspective)
     assert perspective.name == "basic"
@@ -58,7 +56,7 @@ def test_load_user_perspective(tmp_path):
     # Create mock user perspective
     user_dir = tmp_path / "user_perspectives"
     user_dir.mkdir()
-    
+
     perspective_file = user_dir / "custom.yaml"
     perspective_file.write_text("""
 name: custom
@@ -85,7 +83,7 @@ compatibility:
   max_version: "2.0"
   deprecated_features: []
     """)
-    
+
     with pytest.MonkeyPatch.context() as mp:
         mp.setenv("ROS_TO_MARKDOWN_PERSPECTIVES", str(user_dir))
         perspective = load_perspective("custom")
@@ -104,15 +102,15 @@ def test_invalid_perspective(tmp_path, monkeypatch):
     # Create invalid perspective file
     builtin_dir = tmp_path / "definitions"
     builtin_dir.mkdir(parents=True)
-    
+
     perspective_file = builtin_dir / "invalid.yaml"
     perspective_file.write_text("invalid: yaml: content")
-    
+
     # Mock the builtin directory path
     monkeypatch.setattr(
         "ros_to_markdown.perspectives.loader.Path.parent",
         property(lambda _: tmp_path)
     )
-    
+
     with pytest.raises(Exception):
-        load_perspective("invalid") 
+        load_perspective("invalid")

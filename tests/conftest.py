@@ -1,8 +1,9 @@
 """Common test fixtures and configuration."""
-import pytest
 from datetime import datetime
 
-from ros_to_markdown.analysis.interfaces import NodeInfo, TopicInfo, SystemSnapshot
+from ros_to_markdown.analysis.interfaces import NodeInfo, SystemSnapshot, TopicInfo
+
+import pytest
 
 
 @pytest.fixture
@@ -73,4 +74,4 @@ def basic_perspective_dict():
             "max_version": "2.0",
             "deprecated_features": []
         }
-    } 
+    }

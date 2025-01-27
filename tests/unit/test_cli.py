@@ -1,7 +1,8 @@
 """Test CLI functionality."""
-import pytest
 import os
 from pathlib import Path
+
+import pytest
 
 # Skip CLI tests in ROS1 environment
 pytestmark = pytest.mark.skipif(
@@ -10,8 +11,9 @@ pytestmark = pytest.mark.skipif(
 )
 
 try:
-    from click.testing import CliRunner
     from ros_to_markdown.cli import cli, get_config
+
+    from click.testing import CliRunner
 except ImportError:
     CliRunner = None
     cli = None
@@ -24,10 +26,10 @@ def mock_analyzer(monkeypatch, mock_system_snapshot):
     class MockAnalyzer:
         async def get_snapshot(self):
             return mock_system_snapshot
-    
+
     def mock_get_analyzer(*args, **kwargs):
         return MockAnalyzer()
-    
+
     monkeypatch.setattr("ros_to_markdown.cli.get_analyzer", mock_get_analyzer)
 
 
@@ -36,7 +38,7 @@ def test_get_config_defaults(monkeypatch):
     # Clear environment variables to test true defaults
     monkeypatch.delenv("ROS_VERSION", raising=False)
     monkeypatch.delenv("ROS_DISTRO", raising=False)
-    
+
     config = get_config()
     assert config.ros_version.value == 2  # Default to ROS2
     # Don't test specific distro as it depends on environment
@@ -78,7 +80,7 @@ def test_cli_runtime_with_options(mock_analyzer):
     with runner.isolated_filesystem():
         # Create output directory
         Path("test_output").mkdir(parents=True)
-        
+
         result = runner.invoke(cli, [
             "--output-dir", "test_output",
             "--debug",
@@ -97,4 +99,4 @@ def test_cli_invalid_options():
     runner = CliRunner()
     result = runner.invoke(cli, ["--invalid-option"])
     assert result.exit_code != 0
-    assert "Error" in result.output 
+    assert "Error" in result.output
