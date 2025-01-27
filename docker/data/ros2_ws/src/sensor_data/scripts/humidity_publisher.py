@@ -9,8 +9,8 @@ from std_msgs.msg import Float64
 
 class HumidityPublisher(Node):
     def __init__(self):
-        super().__init__('humidity_publisher')
-        self.pub = self.create_publisher(Float64, '/sensor/humidity', 10)
+        super().__init__("humidity_publisher")
+        self.pub = self.create_publisher(Float64, "/sensor/humidity", 10)
         # 2Hz => timer of 0.5 seconds
         self.timer = self.create_timer(0.5, self.publish_humidity)
 
@@ -20,6 +20,7 @@ class HumidityPublisher(Node):
         msg = Float64(data=humidity_value)
         self.pub.publish(msg)
 
+
 def main(args=None):
     rclpy.init(args=args)
     node = HumidityPublisher()
@@ -27,5 +28,6 @@ def main(args=None):
     node.destroy_node()
     rclpy.shutdown()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

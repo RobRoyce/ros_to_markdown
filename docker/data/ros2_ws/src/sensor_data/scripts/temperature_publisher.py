@@ -9,8 +9,8 @@ from std_msgs.msg import Float64
 
 class TemperaturePublisher(Node):
     def __init__(self):
-        super().__init__('temperature_publisher')
-        self.pub = self.create_publisher(Float64, '/sensor/temperature', 10)
+        super().__init__("temperature_publisher")
+        self.pub = self.create_publisher(Float64, "/sensor/temperature", 10)
         self.timer = self.create_timer(1.0, self.publish_temperature)
 
     def publish_temperature(self):
@@ -19,6 +19,7 @@ class TemperaturePublisher(Node):
         msg = Float64(data=temp_value)
         self.pub.publish(msg)
 
+
 def main(args=None):
     rclpy.init(args=args)
     node = TemperaturePublisher()
@@ -26,5 +27,6 @@ def main(args=None):
     node.destroy_node()
     rclpy.shutdown()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

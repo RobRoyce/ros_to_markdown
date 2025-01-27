@@ -6,11 +6,11 @@ from std_msgs.msg import Float64
 
 class DataFilterNode:
     def __init__(self):
-        rospy.init_node('data_filter', anonymous=True)
-        self.pub_filtered = rospy.Publisher('/data/filtered', FilteredData, queue_size=10)
+        rospy.init_node("data_filter", anonymous=True)
+        self.pub_filtered = rospy.Publisher("/data/filtered", FilteredData, queue_size=10)
 
-        rospy.Subscriber('/sensor/temperature', Float64, self.temp_callback)
-        rospy.Subscriber('/sensor/humidity', Float64, self.hum_callback)
+        rospy.Subscriber("/sensor/temperature", Float64, self.temp_callback)
+        rospy.Subscriber("/sensor/humidity", Float64, self.hum_callback)
 
         self.temperature = None
         self.humidity = None
@@ -33,9 +33,12 @@ class DataFilterNode:
             self.pub_filtered.publish(filtered)
             rospy.loginfo("DataFilter: Published FilteredData")
 
+
 def main():
+    global node
     node = DataFilterNode()
     rospy.spin()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

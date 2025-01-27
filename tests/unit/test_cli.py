@@ -3,6 +3,7 @@
 import os
 from pathlib import Path
 from typing import Any
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -36,6 +37,30 @@ def mock_analyzer(monkeypatch: Any, mock_system_snapshot: Any) -> Any:
     monkeypatch.setattr("ros_to_markdown.cli.get_analyzer", mock_get_analyzer)
 
 
+@pytest.fixture
+def mock_perspective_engine(monkeypatch: Any) -> None:
+    """Mock perspective engine."""
+    mock_engine = MagicMock()
+    mock_engine.execute = AsyncMock(return_value={"overview_doc": "# Test Output"})
+
+    def mock_engine_init(*args: Any, **kwargs: Any) -> Any:
+        return mock_engine
+
+    monkeypatch.setattr("ros_to_markdown.cli.PerspectiveEngine", mock_engine_init)
+
+
+@pytest.fixture
+def mock_perspective(monkeypatch: Any) -> None:
+    """Mock perspective loading."""
+    mock_persp = MagicMock()
+    mock_persp.name = "basic"
+
+    def mock_load(*args: Any, **kwargs: Any) -> Any:
+        return mock_persp
+
+    monkeypatch.setattr("ros_to_markdown.cli.load_perspective", mock_load)
+
+
 def test_get_config_defaults(monkeypatch: Any) -> None:
     """Test default configuration."""
     # Clear environment variables to test true defaults
@@ -65,12 +90,18 @@ def test_cli_help() -> None:
     assert "ROS to Markdown" in result.output
 
 
-def test_cli_runtime_basic() -> None:
+def test_cli_runtime_basic(
+    mock_analyzer: Any, mock_perspective: Any, mock_perspective_engine: Any
+) -> None:
     """Test basic runtime command."""
     runner = CliRunner()
     with runner.isolated_filesystem():
+        # Create output directory
+        Path(".").mkdir(parents=True, exist_ok=True)
+
         result = runner.invoke(cli, ["runtime"])
         assert result.exit_code == 0
+        assert Path("basic.md").exists()  # Check output file was created
 
 
 def test_cli_runtime_with_options(mock_analyzer: Any) -> None:

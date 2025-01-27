@@ -102,79 +102,88 @@ def runtime(
     topic_filter: tuple,
 ) -> None:
     """Analyze a running ROS system."""
-    logger.debug(
-        "Runtime command start",
-        namespace=namespace,
-        node_filter=node_filter,
-        topic_filter=topic_filter,
-    )
-
-    if namespace:
-        config.runtime.namespace = namespace
-    if node_filter:
-        config.runtime.node_filter = list(node_filter)
-    if topic_filter:
-        config.runtime.topic_filter = list(topic_filter)
-
-    logger.info(
-        "Starting runtime analysis",
-        namespace=config.runtime.namespace,
-        node_filter=config.runtime.node_filter,
-        topic_filter=config.runtime.topic_filter,
-    )
-
-    # Initialize analyzer
-    logger.debug("Creating analyzer")
     try:
-        analyzer = get_analyzer(config)
-        logger.info("Analyzer initialized", type=type(analyzer).__name__)
-    except AnalyzerInitError as e:
-        logger.error("Failed to initialize analyzer", error=str(e))
-        raise click.ClickException(str(e)) from e
+        logger.debug(
+            "Runtime command start",
+            namespace=namespace,
+            node_filter=node_filter,
+            topic_filter=topic_filter,
+        )
 
-    # Load perspective (use basic if none specified)
-    perspective_name = config.perspective or "basic"
-    try:
-        logger.debug("Loading perspective", name=perspective_name)
-        perspective = load_perspective(perspective_name)
-        logger.debug("Loaded perspective", name=perspective.name)
-    except Exception as e:
-        logger.error("Failed to load perspective", error=str(e))
-        return
+        if namespace:
+            config.runtime.namespace = namespace
+        if node_filter:
+            config.runtime.node_filter = list(node_filter)
+        if topic_filter:
+            config.runtime.topic_filter = list(topic_filter)
 
-    # Create and run perspective engine
-    logger.debug("Creating perspective engine")
-    engine = PerspectiveEngine(perspective)
+        logger.info(
+            "Starting runtime analysis",
+            namespace=config.runtime.namespace,
+            node_filter=config.runtime.node_filter,
+            topic_filter=config.runtime.topic_filter,
+        )
 
-    async def run_analysis() -> None:
+        # Initialize analyzer
+        logger.debug("Creating analyzer")
         try:
-            logger.debug("Starting analysis execution")
-            # Run perspective pipeline
-            result = await engine.execute({"analyzer": analyzer})
-            logger.debug("Analysis execution complete")
+            analyzer = get_analyzer(config)
+            logger.info("Analyzer initialized", type=type(analyzer).__name__)
+        except AnalyzerInitError as e:
+            logger.error("Failed to initialize analyzer", error=str(e))
+            raise click.ClickException(str(e)) from e
 
-            # Get markdown output
-            if "overview_doc" not in result:
-                logger.error("Perspective did not generate expected output")
-                return
-
-            # Write output
-            output_dir = Path(config.output_dir or ".")
-            output_dir.mkdir(parents=True, exist_ok=True)
-
-            output_file = output_dir / f"{perspective.name}.md"
-            logger.debug("Writing output", file=str(output_file))
-            with open(output_file, "w") as f:
-                f.write(result["overview_doc"])
-
-            logger.info("Analysis complete", output_file=str(output_file))
-
+        # Load perspective (use basic if none specified)
+        perspective_name = config.perspective or "basic"
+        try:
+            logger.debug("Loading perspective", name=perspective_name)
+            perspective = load_perspective(perspective_name)
+            logger.debug("Loaded perspective", name=perspective.name)
         except Exception as e:
-            logger.error("Analysis failed", error=str(e))
-            raise RuntimeError("Analysis failed") from e
+            logger.error("Failed to load perspective", error=str(e))
+            return
 
-    logger.debug("Starting analysis run")
-    asyncio.run(run_analysis())
+        # Create and run perspective engine
+        logger.debug("Creating perspective engine")
+        engine = PerspectiveEngine(perspective)
+
+        async def run_analysis() -> None:
+            try:
+                logger.debug("Starting analysis execution")
+                # Run perspective pipeline
+                result = await engine.execute({"analyzer": analyzer})
+                logger.debug("Analysis execution complete")
+
+                # Get markdown output
+                if "overview_doc" not in result:
+                    logger.error("Perspective did not generate expected output")
+                    return
+
+                # Write output
+                output_dir = Path(config.output_dir or ".")
+                output_dir.mkdir(parents=True, exist_ok=True)
+
+                output_file = output_dir / f"{perspective.name}.md"
+                logger.debug("Writing output", file=str(output_file))
+                with open(output_file, "w") as f:
+                    f.write(result["overview_doc"])
+
+                logger.info("Analysis complete", output_file=str(output_file))
+
+            except Exception as e:
+                logger.error("Analysis failed", error=str(e))
+                raise RuntimeError("Analysis failed") from e
+
+        logger.debug("Starting analysis run")
+        try:
+            asyncio.run(run_analysis())
+        except RuntimeError as e:
+            logger.error("Analysis failed", error=str(e))
+            raise click.ClickException(f"Analysis failed: {str(e)}") from e
+
+    except Exception as e:
+        logger.error("Unexpected error", error=str(e))
+        raise click.ClickException(f"Unexpected error: {str(e)}") from e
 
 
 # Entry point for the CLI
