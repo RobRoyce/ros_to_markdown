@@ -4,8 +4,8 @@ import rospy
 
 
 def main():
-    rospy.init_node('command_listener', anonymous=True)
-    pub_cmd_vel = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+    rospy.init_node("command_listener", anonymous=True)
+    pub_cmd_vel = rospy.Publisher("/cmd_vel", Twist, queue_size=10)
     rate = rospy.Rate(1)
     forward = True
 
@@ -24,5 +24,6 @@ def main():
         forward = not forward
         rate.sleep()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

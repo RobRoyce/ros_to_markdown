@@ -6,8 +6,8 @@ from std_msgs.msg import Float64
 
 
 def main():
-    rospy.init_node('humidity_publisher', anonymous=True)
-    pub = rospy.Publisher('/sensor/humidity', Float64, queue_size=10)
+    rospy.init_node("humidity_publisher", anonymous=True)
+    pub = rospy.Publisher("/sensor/humidity", Float64, queue_size=10)
     rate = rospy.Rate(2)  # 2Hz
 
     while not rospy.is_shutdown():
@@ -16,5 +16,6 @@ def main():
         pub.publish(humidity_value)
         rate.sleep()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

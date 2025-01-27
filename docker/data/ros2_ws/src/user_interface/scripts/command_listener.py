@@ -7,8 +7,8 @@ from rclpy.node import Node
 
 class CommandListener(Node):
     def __init__(self):
-        super().__init__('command_listener')
-        self.pub_cmd_vel = self.create_publisher(Twist, '/cmd_vel', 10)
+        super().__init__("command_listener")
+        self.pub_cmd_vel = self.create_publisher(Twist, "/cmd_vel", 10)
         self.timer = self.create_timer(1.0, self.publish_cmd)
         self.forward = True
 
@@ -25,6 +25,7 @@ class CommandListener(Node):
         self.pub_cmd_vel.publish(twist)
         self.forward = not self.forward
 
+
 def main(args=None):
     rclpy.init(args=args)
     node = CommandListener()
@@ -32,5 +33,6 @@ def main(args=None):
     node.destroy_node()
     rclpy.shutdown()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

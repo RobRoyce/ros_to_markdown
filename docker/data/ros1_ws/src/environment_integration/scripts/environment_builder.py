@@ -6,9 +6,9 @@ from std_msgs.msg import String
 
 class EnvironmentBuilderNode:
     def __init__(self):
-        rospy.init_node('environment_builder', anonymous=True)
-        self.pub_env = rospy.Publisher('/environment/data', EnvironmentData, queue_size=10)
-        rospy.Subscriber('/data/processed', String, self.processed_callback)
+        rospy.init_node("environment_builder", anonymous=True)
+        self.pub_env = rospy.Publisher("/environment/data", EnvironmentData, queue_size=10)
+        rospy.Subscriber("/data/processed", String, self.processed_callback)
 
     def processed_callback(self, msg):
         env_msg = EnvironmentData()
@@ -18,9 +18,12 @@ class EnvironmentBuilderNode:
         self.pub_env.publish(env_msg)
         rospy.loginfo("EnvironmentBuilder: Published EnvironmentData")
 
+
 def main():
+    global node
     node = EnvironmentBuilderNode()
     rospy.spin()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

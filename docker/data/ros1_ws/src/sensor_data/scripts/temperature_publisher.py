@@ -6,8 +6,8 @@ from std_msgs.msg import Float64
 
 
 def main():
-    rospy.init_node('temperature_publisher', anonymous=True)
-    pub = rospy.Publisher('/sensor/temperature', Float64, queue_size=10)
+    rospy.init_node("temperature_publisher", anonymous=True)
+    pub = rospy.Publisher("/sensor/temperature", Float64, queue_size=10)
     rate = rospy.Rate(1)  # 1Hz
 
     while not rospy.is_shutdown():
@@ -16,5 +16,6 @@ def main():
         pub.publish(temp_value)
         rate.sleep()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
