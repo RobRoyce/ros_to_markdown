@@ -2,9 +2,7 @@
 
 [![PyPI version](https://badge.fury.io/py/ros-to-markdown.svg)](https://badge.fury.io/py/ros-to-markdown)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Python Versions](https://img.shields.io/pypi/pyversions/ros-to-markdown.svg)](https://pypi.org/project/ros-to-markdown/)
-[![Documentation Status](https://readthedocs.org/projects/ros-to-markdown/badge/?version=latest)](https://ros-to-markdown.readthedocs.io/en/latest/?badge=latest)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Python](https://img.shields.io/badge/python-3.8%20%7C%203.10%20%7C%203.12-blue)](https://www.python.org/)
 [![ROS1: Noetic](https://img.shields.io/badge/ROS1-Noetic-blue)](http://wiki.ros.org/noetic)
 [![ROS2: Humble-Iron-Jazzy](https://img.shields.io/badge/ROS2-Humble%20%7C%20Iron%20%7C%20Jazzy-blue)](https://docs.ros.org/en/humble/)
 
